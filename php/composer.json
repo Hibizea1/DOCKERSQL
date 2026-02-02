@@ -1,0 +1,8 @@
+{
+  "name": "unreal/game-config",
+  "description": "Dependencies pour config et Firebase",
+  "require": {
+    "php": ">=8.2",
+    "kreait/firebase-php": "^6.0"
+  }
+}
