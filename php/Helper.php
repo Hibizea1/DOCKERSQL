@@ -75,14 +75,16 @@ function GetCharacterFromUserId(mysqli $conn,string $user_id): array
     return $characters ?: [];
 }
 
-function UpdateCharacter(mysqli $conn, int $user_id, $data){
+function UpdateCharacter(mysqli $conn, int $user_id, $data)
+{
     $stmt = $conn->prepare("UPDATE characters SET level = ?, xp = ?, gold = ? WHERE user_id = ?");
     $stmt->bind_param("iiii", $data["level"], $data["xp"], $data["gold"], $user_id);
     return $stmt->execute();
 
 }
 
-function CheckUser(mysqli $conn, int $user_id): bool{
+function CheckUser(mysqli $conn, int $user_id): bool
+{
     $checkUser = $conn->prepare("SELECT id FROM users WHERE id = ?");
     $checkUser->bind_param("i", $user_id);
     $checkUser->execute();
@@ -95,7 +97,8 @@ function CheckUser(mysqli $conn, int $user_id): bool{
     }
 }
 
-function GetAllItemsFromUserId(mysqli $conn, string $user_id): array{
+function GetAllItemsFromUserId(mysqli $conn, string $user_id): array
+{
     $characters = GetCharacterFromUserId($conn, $user_id);
 
     if (!$characters || !isset($characters[0]["id"])) {
@@ -103,8 +106,8 @@ function GetAllItemsFromUserId(mysqli $conn, string $user_id): array{
     }
 
     $character_id = (int)$characters[0]["id"];
+    // var_dump($character_id);
 
-    // 1️⃣ Récupérer les instances d'inventaire
     $stmt = $conn->prepare("
         SELECT * FROM inventories WHERE character_id = ?
     ");
@@ -112,21 +115,20 @@ function GetAllItemsFromUserId(mysqli $conn, string $user_id): array{
     $stmt->execute();
 
     $inventories = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
-
+    // var_dump($inventories);
     $items = [];
 
-    // 2️⃣ Pour chaque item d'inventaire, récupérer ses données
     foreach ($inventories as $itemInstance) {
 
         $itemStmt = $conn->prepare("
-            SELECT * FROM instance_items WHERE item_id = ?
+            SELECT * FROM instance_items WHERE id = ?
         ");
         $itemStmt->bind_param("i", $itemInstance["item_id"]);
         $itemStmt->execute();
 
         $itemData = $itemStmt->get_result()->fetch_assoc();
-
-
+        
+        // var_dump($itemData);
         if (!$itemData) {
             continue;
         }
