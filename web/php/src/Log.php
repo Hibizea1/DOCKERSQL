@@ -39,7 +39,7 @@ class Log {
         
         $logFile = $filename ?? $name;
         
-        $logPath = __DIR__ . "/../../logs/$logFile.log";
+        $logPath = __DIR__ . "/../../../logs/$logFile.log";
 
         if (!file_exists(dirname($logPath))) {
             mkdir(dirname($logPath), 0777, true);

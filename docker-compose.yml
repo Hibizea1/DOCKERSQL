@@ -9,7 +9,8 @@ services:
     ports:
       - 8080:80
     volumes:
-      - ./php:/var/www/html
+      - ./web/public:/var/www/html/public
+      - ./web/php:/var/www/html/php
       - ./config:/var/www/config
       - ./logs:/var/www/logs
     build: 

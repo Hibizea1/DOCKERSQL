@@ -10,7 +10,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 use App\Log;
 use Firebase\JWT\JWT;
 
-$jwtConfig = require __DIR__ . '/../config/jwt.php';
+$jwtConfig = require __DIR__ . '/../../config/jwt.php';
 $logFile = "login";
 
 /* =========================
@@ -22,6 +22,7 @@ $login = trim($data['username'] ?? $data['email'] ?? '');
 $password = $data['password'] ?? '';
 
 $isEmail = filter_var($login, FILTER_VALIDATE_EMAIL) !== false;
+
 
 if($isEmail){
     Log::info("Connection with email", $logFile);
@@ -102,11 +103,13 @@ $update->execute();
 ========================= */
 $character = GetCharacterFromUserId($conn, $userId);
 
-if($character){
+if(!$character){
     Log::error("Character not found", $logFile);
-}else{
-    Log::info("Character found", $logFile);
+    echo json_encode(["status" => "error", "message" => "Character not found"]);
+    exit;
 }
+
+Log::info("Character found", $logFile);
 
 /* =========================
    Réponse
