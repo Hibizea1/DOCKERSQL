@@ -15,6 +15,14 @@ RUN php -r "copy('https://getcomposer.org/installer', 'composer-setup.php');" \
     && php composer-setup.php --install-dir=/usr/local/bin --filename=composer \
     && php -r "unlink('composer-setup.php');"
 
+RUN mkdir -p /var/www/html/logs \
+    && chown -R www-data:www-data /var/www/html/logs \
+    && chmod -R 0777 /var/www/html/logs
+
+RUN apt-get update \
+    && apt-get install -y libsodium-dev \
+    && docker-php-ext-install sodium
+
 WORKDIR /var/www/html
 
 EXPOSE 80

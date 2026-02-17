@@ -1,16 +1,29 @@
 <?php
 require "db.php";
+require_once __DIR__ . '/vendor/autoload.php';
+
+use App\Log;
+
+$logFile = "itemUpdate";
 
 $data = json_decode(file_get_contents("php://input"), true);
-$items = $data["items"] ?? [];
+$items = $data["item"] ?? [];
+
+if (empty($items)) {
+    Log::error("No items provided for update", $logfile);
+    echo json_encode(["status" => "failed", "cause" => "no_items"]);
+    exit;
+}
+
+Log::info("Items update started with " . count($items) . " items", $logfile);
 
 $checkStmt = $conn->prepare(
     "SELECT 1 FROM items WHERE item_id = ?"
 );
 
 $insertStmt = $conn->prepare(
-    "INSERT INTO items (name, type, rarity, item_id, price)
-     VALUES (?, ?, ?, ?, ?)"
+    "INSERT INTO items (name, type, rarity, item_id, price, weaponType)
+     VALUES (?, ?, ?, ?, ?, ?)"
 );
 
 foreach ($items as $item) {
@@ -27,14 +40,16 @@ foreach ($items as $item) {
 
     // 🔹 Sinon → insertion
     $insertStmt->bind_param(
-        "sssii",
+        "sssiis",
         $item["name"],
         $item["type"],
         $item["rarity"],
         $item["id"],
-        $item["price"]
+        $item["price"],
+        $item["weaponType"]
     );
     $insertStmt->execute();
 }
 
+Log::info("Items updated successfully", $logfile);
 echo json_encode(["status" => "ok"]);

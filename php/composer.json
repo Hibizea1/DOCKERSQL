@@ -3,6 +3,12 @@
   "description": "Dependencies pour config et Firebase",
   "require": {
     "php": ">=8.2",
-    "kreait/firebase-php": "^6.0"
+    "kreait/firebase-php": "^6.0",
+    "monolog/monolog": "^3.10"
+  },
+  "autoload": {
+    "psr-4": {
+      "App\\": "src/"
+    }
   }
 }

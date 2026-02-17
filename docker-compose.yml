@@ -11,6 +11,7 @@ services:
     volumes:
       - ./php:/var/www/html
       - ./config:/var/www/config
+      - ./logs:/var/www/logs
     build: 
       context: .
       dockerfile: Dockerfile

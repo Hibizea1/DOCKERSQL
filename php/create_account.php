@@ -8,9 +8,10 @@ require "Helper.php";
 require_once __DIR__ . '/vendor/autoload.php';
 
 use Firebase\JWT\JWT;
+use App\Log;
 
 $jwtConfig = require __DIR__ . '/../config/jwt.php';
-
+$logFile = "create";
 /* =========================
    Lecture input
 ========================= */
@@ -20,6 +21,7 @@ $email    = trim($data["email"] ?? "");
 $password = $data["password"] ?? "";
 
 if ($username === "" || $email === "" || $password === "") {
+    Log::error("Missing fields", $logFile);
     echo json_encode(["status" => "missing_fields"]);
     exit;
 }
@@ -35,6 +37,7 @@ $check->execute();
 $check->store_result();
 
 if ($check->num_rows > 0) {
+    Log::error("User already exists !", $logFile);
     echo json_encode(["status" => "exists"]);
     exit;
 }
@@ -52,12 +55,15 @@ InsertIntoTable('users', [
 
 $userId = GetUserId($conn, $username);
 
+Log::info("User created", $logFile);
 /* =========================
    Création character
 ========================= */
+
 InsertIntoTable('characters', [
     'user_id' => $userId
 ]);
+Log::info("Character created", $logFile);
 
 /* =========================
    ACCESS TOKEN (JWT)
@@ -75,10 +81,13 @@ $accessToken = JWT::encode(
     $jwtConfig['algo']
 );
 
+Log::info("Access token created", $logFile);
+
 /* =========================
    REFRESH TOKEN
 ========================= */
 $refreshToken = bin2hex(random_bytes(32));
+Log::info("refresh token created", $logFile);
 
 $stmt = $conn->prepare(
     "UPDATE users SET refresh_token = ? WHERE id = ?"
@@ -91,7 +100,6 @@ $stmt->execute();
 ========================= */
 echo json_encode([
     "status"         => "success",
-    "user_id"        => $userId,
     "access_token"  => $accessToken,
     "refresh_token" => $refreshToken,
     "character"     => GetCharacterFromUserId($conn, $userId)
