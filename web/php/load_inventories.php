@@ -7,7 +7,7 @@ use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use App\Log;
 
-$jwtConfig = require __DIR__ . '/../config/jwt.php';
+$jwtConfig = require __DIR__ . '/../../config/jwt.php';
 
 
 /* =========================
@@ -51,5 +51,7 @@ if(CheckUser($conn, $userId)){
 }
 
 $data = GetAllItemsFromUserId($conn, $userId);
+$equipment = GetAllEquipmentFromUserId($conn, $userId);
 Log::info("Inventories loaded successfully for user: $userId", "inventories");
-echo json_encode(["result" => $data]);
+echo json_encode(["Items" => $data,
+"Equipment" => $equipment]);

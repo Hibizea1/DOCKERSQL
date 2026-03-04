@@ -77,10 +77,9 @@ function GetCharacterFromUserId(mysqli $conn,string $user_id): array
 
 function UpdateCharacter(mysqli $conn, int $user_id, $data)
 {
-    $stmt = $conn->prepare("UPDATE characters SET level = ?, xp = ?, gold = ? WHERE user_id = ?");
-    $stmt->bind_param("iiii", $data["level"], $data["xp"], $data["gold"], $user_id);
+    $stmt = $conn->prepare("UPDATE characters SET level = ?, xp = ?, gold = ?,stamina = ?,strenght=?,mana=?,health=?,intelligence=? WHERE user_id = ?");
+    $stmt->bind_param("iiiiiiiii", $data["level"], $data["xp"], $data["gold"], $data["stamina"],$data["strengh"],$data["mana"],$data["health"],$data["intelligence"],$user_id);
     return $stmt->execute();
-
 }
 
 function CheckUser(mysqli $conn, int $user_id): bool
@@ -137,6 +136,166 @@ function GetAllItemsFromUserId(mysqli $conn, string $user_id): array
             "item_id"      => (int)$itemData["item_id"],
             "rarity"       => (int)$itemData["rarity"],
             "lvl"          => (int)$itemData["lvl"],
+        ];
+    }
+
+    return $items;
+}
+
+function GetAllEquipmentFromUserId(mysqli $conn, string $user_id): array
+{
+    $characters = GetCharacterFromUserId($conn, $user_id);
+
+    if (!$characters || !isset($characters[0]["id"])) {
+        return ["No Character"];
+    }
+
+    $character_id = (int)$characters[0]["id"];
+    // var_dump($character_id);
+
+    $stmt = $conn->prepare("
+        SELECT * FROM equipment WHERE characters_id = ?
+    ");
+    $stmt->bind_param("i", $character_id);
+    $stmt->execute();
+
+    $equipment = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    // var_dump($inventories);
+    $items = [];
+
+    foreach ($equipment as $itemInstance) {
+
+        $itemStmt = $conn->prepare("
+            SELECT * FROM instance_items WHERE id = ?
+        ");
+        $itemStmt->bind_param("i", $itemInstance["item_id"]);
+        $itemStmt->execute();
+
+        $itemData = $itemStmt->get_result()->fetch_assoc();
+        
+        // var_dump($itemData);
+        if (!$itemData) {
+            continue;
+        }
+
+        $items[] = [
+            "item_id"      => (int)$itemData["item_id"],
+            "rarity"       => (int)$itemData["rarity"],
+            "lvl"          => (int)$itemData["lvl"],
+        ];
+    }
+
+    return $items;
+}
+
+function GetAllItemsFromInventoryAndUserID(mysqli $conn, string $user_id): array
+{
+    $characters = GetCharacterFromUserId($conn, $user_id);
+
+    if (!$characters || !isset($characters[0]["id"])) {
+        return ["No Character"];
+    }
+
+    $character_id = (int)$characters[0]["id"];
+    // var_dump($character_id);
+
+    $stmt = $conn->prepare("
+        SELECT * FROM inventories WHERE character_id = ?
+    ");
+    $stmt->bind_param("i", $character_id);
+    $stmt->execute();
+
+    $inventories = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    // var_dump($inventories);
+    $items = [];
+
+    foreach ($inventories as $itemInstance) {
+
+        $itemStmt = $conn->prepare("
+            SELECT * FROM instance_items WHERE id = ?
+        ");
+        $itemStmt->bind_param("i", $itemInstance["item_id"]);
+        $itemStmt->execute();
+
+        $itemInstanceData = $itemStmt->get_result()->fetch_assoc();
+        
+        $itemStmt = $conn->prepare("
+            SELECT * FROM items WHERE Item_ID = ?
+        ");
+        $itemStmt->bind_param("i", $itemInstanceData["item_id"]);
+        $itemStmt->execute();
+
+        $itemData = $itemStmt->get_result()->fetch_assoc();
+        
+        if (!$itemInstanceData) {
+            continue;
+        }
+
+        $items[] = [
+            "item_id"      => (int)$itemInstanceData["item_id"],
+            "rarity"       => (int)$itemInstanceData["rarity"],
+            "lvl"          => (int)$itemInstanceData["lvl"],
+            "equipment_type" => $itemData["type"],
+            "name" => $itemData["name"],
+            "weapon_type" => $itemData["weaponType"],
+            "price" => $itemData["Price"]
+        ];
+    }
+
+    return $items;
+}
+
+function GetAllItemsFromEquipmentAndUserID(mysqli $conn, string $user_id): array
+{
+    $characters = GetCharacterFromUserId($conn, $user_id);
+
+    if (!$characters || !isset($characters[0]["id"])) {
+        return ["No Character"];
+    }
+
+    $character_id = (int)$characters[0]["id"];
+    // var_dump($character_id);
+
+    $stmt = $conn->prepare("
+        SELECT * FROM equipment WHERE characters_id = ?
+    ");
+    $stmt->bind_param("i", $character_id);
+    $stmt->execute();
+
+    $inventories = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+    // var_dump($inventories);
+    $items = [];
+
+    foreach ($inventories as $itemInstance) {
+
+        $itemStmt = $conn->prepare("
+            SELECT * FROM instance_items WHERE id = ?
+        ");
+        $itemStmt->bind_param("i", $itemInstance["item_id"]);
+        $itemStmt->execute();
+
+        $itemInstanceData = $itemStmt->get_result()->fetch_assoc();
+        
+        $itemStmt = $conn->prepare("
+            SELECT * FROM items WHERE Item_ID = ?
+        ");
+        $itemStmt->bind_param("i", $itemInstanceData["item_id"]);
+        $itemStmt->execute();
+
+        $itemData = $itemStmt->get_result()->fetch_assoc();
+        
+        if (!$itemInstanceData) {
+            continue;
+        }
+
+        $items[] = [
+            "item_id"      => (int)$itemInstanceData["item_id"],
+            "rarity"       => (int)$itemInstanceData["rarity"],
+            "lvl"          => (int)$itemInstanceData["lvl"],
+            "equipment_type" => $itemData["type"],
+            "name" => $itemData["name"],
+            "weapon_type" => $itemData["weaponType"],
+            "price" => $itemData["Price"]
         ];
     }
 

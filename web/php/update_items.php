@@ -4,10 +4,10 @@ require_once __DIR__ . '/vendor/autoload.php';
 
 use App\Log;
 
-$logFile = "itemUpdate";
+$logfile = "itemUpdate";
 
 $data = json_decode(file_get_contents("php://input"), true);
-$items = $data["item"] ?? [];
+$items = $data["items"] ?? [];
 
 if (empty($items)) {
     Log::error("No items provided for update", $logfile);
@@ -22,8 +22,8 @@ $checkStmt = $conn->prepare(
 );
 
 $insertStmt = $conn->prepare(
-    "INSERT INTO items (name, type, rarity, item_id, price, weaponType)
-     VALUES (?, ?, ?, ?, ?, ?)"
+    "INSERT INTO items (name, type, rarity, item_id, price, weaponType, imagePath, mesh_path, damageMultiplier)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
 );
 
 foreach ($items as $item) {
@@ -33,20 +33,23 @@ foreach ($items as $item) {
     $checkStmt->execute();
     $checkStmt->store_result();
 
-    // 🔹 Si existe → on skip
+     // 🔹 Si existe → on skip
     if ($checkStmt->num_rows > 0) {
         continue;
     }
 
     // 🔹 Sinon → insertion
     $insertStmt->bind_param(
-        "sssiis",
+        "sssiisssi",
         $item["name"],
         $item["type"],
         $item["rarity"],
         $item["id"],
         $item["price"],
-        $item["weaponType"]
+        $item["weaponType"],
+        $item["iconPath"],
+        $item["meshPath"],
+        $item["damageMultiplier"]
     );
     $insertStmt->execute();
 }

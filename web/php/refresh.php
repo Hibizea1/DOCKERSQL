@@ -8,7 +8,7 @@ require_once __DIR__ . '/vendor/autoload.php';
 
 use Firebase\JWT\JWT;
 
-$jwtConfig = require __DIR__ . '/../config/jwt.php';
+$jwtConfig = require __DIR__ . '/../../config/jwt.php';
 
 /* =========================
    Lecture input

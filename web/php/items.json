@@ -1,0 +1,66 @@
+{
+    "items": {
+        "EWeaponType::Bow": [
+            {
+                "id": "95",
+                "name": "crystalBow",
+                "type": "EEquipmentType::Weapon",
+                "rarity": "0",
+                "Item_ID": "0",
+                "Price": "1",
+                "mesh_path": "\/Game\/Weapon\/Mesh\/Falconer_s_White_Bow.Falconer_s_White_Bow",
+                "weaponType": "EWeaponType::Bow",
+                "imagePath": "\/Game\/IconCreator\/T_Bow1.T_Bow1",
+                "damageMultiplier": "18"
+            },
+            {
+                "id": "96",
+                "name": "falconBow",
+                "type": "EEquipmentType::Weapon",
+                "rarity": "0",
+                "Item_ID": "2",
+                "Price": "1",
+                "mesh_path": "\/Game\/Weapon\/Mesh\/Mechanical_Bow.Mechanical_Bow",
+                "weaponType": "EWeaponType::Bow",
+                "imagePath": "\/Game\/IconCreator\/T_Bow3.T_Bow3",
+                "damageMultiplier": "22"
+            },
+            {
+                "id": "97",
+                "name": "frostBow",
+                "type": "EEquipmentType::Weapon",
+                "rarity": "0",
+                "Item_ID": "3",
+                "Price": "1",
+                "mesh_path": "\/Game\/Weapon\/Mesh\/Frost_Bow_Ignavus.Frost_Bow_Ignavus",
+                "weaponType": "EWeaponType::Bow",
+                "imagePath": "\/Game\/IconCreator\/T_Bow4.T_Bow4",
+                "damageMultiplier": "20"
+            },
+            {
+                "id": "98",
+                "name": "mechanicalBow",
+                "type": "EEquipmentType::Weapon",
+                "rarity": "0",
+                "Item_ID": "4",
+                "Price": "1",
+                "mesh_path": "\/Game\/Weapon\/Mesh\/Obsidian_Dragon_Bow_X.Obsidian_Dragon_Bow_X",
+                "weaponType": "EWeaponType::Bow",
+                "imagePath": "\/Game\/IconCreator\/T_Bow5.T_Bow5",
+                "damageMultiplier": "20"
+            },
+            {
+                "id": "99",
+                "name": "obsidianBow",
+                "type": "EEquipmentType::Weapon",
+                "rarity": "0",
+                "Item_ID": "5",
+                "Price": "1",
+                "mesh_path": "\/Game\/Weapon\/Mesh\/Great_Crystal_Bow.Great_Crystal_Bow",
+                "weaponType": "EWeaponType::Bow",
+                "imagePath": "\/Game\/IconCreator\/T_Bow2.T_Bow2",
+                "damageMultiplier": "25"
+            }
+        ]
+    }
+}

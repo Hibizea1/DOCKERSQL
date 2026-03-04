@@ -95,7 +95,18 @@ $update = $conn->prepare(
 );
 $update->bind_param("si", $refreshToken, $userId);
 $update->execute();
+/* =========================
+   Character
+========================= */
+$character = GetCharacterFromUserId($conn, $userId);
 
+if(!$character){
+    Log::error("Character not found", $logFile);
+    echo json_encode(["status" => "error", "message" => "Character not found"]);
+    exit;
+}
+
+Log::info("Character found", $logFile);
 /* =========================
    Réponse
 ========================= */
@@ -103,5 +114,6 @@ echo json_encode([
     "status"        => "success",
     "access_token" => $accessToken,
     "refresh_token"=> $refreshToken,
-    "username" => $username
+    "username" => $username,
+    "character" => $character
 ]);

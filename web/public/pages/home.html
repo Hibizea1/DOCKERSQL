@@ -6,14 +6,82 @@
     <link rel="stylesheet" href="../assets/css/home.css">
 </head>
 <body>
-<div class="container">
-    <h2>Profile</h2>
 
-    <form id="profile">
-        <span id="name">Name :</span>
+    <div class="searchBar">
+        <input type="text" id="searchInput" placeholder="Enter a username">
+        <div class="searchResults" id="searchResults"></div>
+        <button class="searchButton" type="button">Home</button>
+        <div class="dropdown">
+           <button class="searchButton" id="profileBtn" type="button">Profil</button>
 
-    </form>
+              <div class="dropdown-content" id="profileDropdown">
+                <button id="ProfilButton" type="button">Profil</button>
+                <button id="SettingsButton" type="button">Settings</button>
+                <button id="logOutButton" type="button">Log Out</button>
+             </div>
 </div>
+    </div>
+    
+    
+<div class="layout">
+
+
+    
+    <!-- LEFT : CONTAINER -->
+    <div class="container">
+        <h2>Profile</h2>
+
+        <form id="profile">
+            <div class="container-header">
+                <span id="name">Pseudo : JohnDoe</span>
+                <span id="level">Level : 12</span>
+            </div>
+            <table id="inventories">
+                <thead>
+                <tr>
+                    <th>Item Name</th>
+                    <th>Rarity</th>
+                    <th>Level</th>
+                    <th>Price</th>
+                    <th>Equipment Type</th>
+                    <th>Weapon Type</th>
+                </tr>
+                </thead>
+                <tbody></tbody>
+            </table>
+        </form>
+    </div>
+
+    <!-- MIDDLE : SLOTS -->
+<div class="equip-slots">
+    <div class="slot" data-slot="helmet">
+        <img id="slot-head" src="../assets/img/slots/head.png">
+    </div>
+    <div class="slot" data-slot="armor">
+        <img id="slot-chest" src="../assets/img/slots/chest.png">
+    </div>
+    <div class="slot" data-slot="pants">
+        <img id="slot-legs" src="../assets/img/slots/pants.png">
+    </div>
+    <div class="slot" data-slot="boots">
+        <img id="slot-boots" src="../assets/img/slots/boots.png">
+    </div>
+    <div class="slot" data-slot="weapon">
+        <img id="slot-weapon" src="../assets/img/slots/weapon.png">
+    </div>
+</div>
+
+    <!-- RIGHT : INFOS --> 
+        <div class="slot-infos" id="slotInfos">
+            <h3>Equipment Infos</h3>
+            <p id="info-name">Name : -</p>
+            <p id="info-rarity">Rarity : -</p>
+            <p id="info-level">Level : -</p>
+            <p id="info-desc">Description : -</p>
+        </div>
+
+</div>
+
 <script src="../assets/js/home.js"></script>
 </body>
 </html>

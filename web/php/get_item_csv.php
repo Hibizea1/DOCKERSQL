@@ -3,6 +3,7 @@ require "db.php";
 require_once __DIR__ . '/vendor/autoload.php';
 
 use App\Log;
+
 $logFile = "item";
 
 $stmt = $conn->query("SELECT * FROM items");
@@ -17,30 +18,33 @@ $rows = $stmt->fetch_all(MYSQLI_ASSOC);
 
 Log::info("Item retrieval started, found " . count($rows) . " items", $logFile);
 
-$csvPath = __DIR__ . "/items.csv";
-$file = fopen($csvPath, "w");
+// GROUPE PAR TYPE
+$grouped = [];
 
-if (!$file) {
-    log::critical("Impossible to create files ", $logFile);
-    echo "Impossible de créer le fichier CSV";
+foreach ($rows as $row) {
+    $type = $row["weaponType"] ?? "Unknown";
+
+    // Ajoute l'objet dans le bon groupe
+    $grouped[$type][] = $row;
+}
+
+// ROOT = OBJECT -> "items": { ... }
+$root = [
+    "items" => $grouped
+];
+
+$jsonPath = __DIR__ . "/items.json";
+
+$jsonData = json_encode($root, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
+
+if (file_put_contents($jsonPath, $jsonData) === false) {
+    Log::critical("Impossible to create JSON file", $logFile);
+    echo "Impossible de créer le fichier JSON";
     exit;
 }
 
-
-if (!empty($rows)) {
-    fputcsv($file, array_keys($rows[0]));
-
-    foreach ($rows as $row) {
-        fputcsv($file, $row);
-    }
-}
-
-fclose($file);
 $stmt->close();
 
-Log::info("Files created", $logFile);
+Log::info("JSON file created: items.json", $logFile);
 
-/**
- * 4️⃣ Confirmation
- */
-echo "CSV exporté : items.csv";
+echo "JSON exporté : items.json";

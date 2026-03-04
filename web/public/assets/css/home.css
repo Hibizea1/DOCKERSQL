@@ -1,4 +1,335 @@
-body{
+body {
+    background: #1c1c1c;
+    color: #eee;
     font-family: Arial, sans-serif;
-    background-color: #000000;
+    /* display: flex; */
+    
+}
+
+
+body > *{
+    margin-bottom: 50px;
+}
+
+/* Layout */
+.layout {
+    display: flex;
+    gap: 40px;
+    align-items: flex-start;
+    /* padding: 0px 20px; */
+    /* flex-direction: column; */
+    justify-content: left;
+    /* font-size: xx-large; */
+}
+
+.layout > *{
+    margin-bottom: 50px !important;
+}
+
+
+/* Left panel */
+.container {
+    display: inline-block; /* s'adapte à son contenu */
+    padding: 20px;
+    background: #2b2b2b;
+    border-radius: 10px;
+    border: 2px solid #3a3a3a;
+    box-shadow: 0 0 10px #000;
+    vertical-align: top; /* aligne avec les autres colonnes */
+    min-width: auto;
+    overflow-x: auto;/* largeur minimale */
+    max-width: 100%; /* jamais plus que la page */
+}
+
+.container h2 {
+    color: #70aaff;
+    text-align: center;
+}
+
+/* Container header pour pseudo + level */
+.container-header {
+    display: flex;             /* flex pour aligner sur la même ligne */
+    justify-content: space-between; /* espace entre pseudo et level */
+    align-items: center;       /* vertical centré */
+    margin-bottom: 15px;       /* espace avec le tableau */
+}
+
+span#level{
+    font-weight: lighter;
+    font-size: 16px;
+    color: #ffffff; /* couleur du titre / cohérence avec home.css */
+    text-align: center;
+    width: 100%;
+    display: block;
+}
+
+/* Table styling */
+#inventories {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: auto;   /* ajuste les colonnes automatiquement */
+    overflow-x: auto;
+    display: block;  
+}
+
+#inventories th {
+    background: #383838;
+    padding: 8px;
+    color: #a7c8ff;
+}
+
+#inventories td {
+    background: #2c2c2c;
+    padding: 6px;
+    border-top: 1px solid #444;
+}
+
+/* Slots column */
+.equip-slots {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+/* Slot box */
+.slot {
+    width: 85px;
+    height: 85px;
+    background: linear-gradient(#3b3b3b, #2b2b2b);
+    border: 2px solid #555;
+    border-radius: 10px;
+    box-shadow: 0 0 8px #000;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: 0.2s;
+}
+
+.slot:hover {
+    border-color: #70aaff;
+    box-shadow: 0 0 10px #70aaff;
+}
+
+.slot.selected {
+    border-color: #4caf50;
+    box-shadow: 0 0 12px #4caf50;
+}
+
+.slot img {
+    max-width: 60%;
+    opacity: 0.85;
+}
+
+/* Right info panel */
+.slot-infos {
+    width: 20%;
+    padding: 35px;
+    background: #232323;
+    border: 2px solid #3a3a3a;
+    border-radius: 10px;
+    box-shadow: 0 0 10px #000;
+}
+
+.slot-infos h3 {
+    color: #70aaff;
+}
+
+
+
+/* Barre de recherche petite et discrète */
+.searchBar {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 40%;               /* petit carré */
+    height: 60px;
+    background-color: #2b2b2b; /* couleur panel sombre */
+    border: 1px solid #3a3a3a; /* contour léger */
+    border-radius: 6px;
+    /* padding: 0px 8px; */
+}
+
+/* Input texte à l'intérieur */
+.searchBar input[type=text] {
+    width: 100%;
+    height: 80%;
+    border: none;
+    border-radius: 4px;
+    background-color: #1e1e1e; /* sombre */
+    color: #eee;
+    text-align: left;        /* texte centré */
+    font-size: 16px;
+    outline: none;
+    margin-right: 10px;
+    margin-left: 10px;
+}
+
+/* Placeholder discret */
+.searchBar input[type=text]::placeholder {
+    color: #aaa;
+}
+
+/* Panel des résultats */
+.searchResults {
+    position: absolute;          /* flotte au-dessus du layout */
+    top: 60px;
+    left: 15px;
+    background-color: #2b2b2b;  /* sombre */
+    border: 1px solid #3a3a3a;
+    border-radius: 6px;
+    width: 200px;
+    max-height: 300px;
+    overflow-y: auto;
+    box-shadow: 0 0 8px #000;
+    z-index: 1000;
+    display: none;               /* caché par défaut */
+}
+
+/* Chaque résultat */
+.searchResults .resultItem {
+    padding: 8px 10px;
+    cursor: pointer;
+    color: #eee;
+    border-bottom: 1px solid #3a3a3a;
+}
+
+.searchResults .resultItem:hover {
+    background-color: #383838;
+}
+
+.buttonHome {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(#3b3b3b, #2b2b2b);
+    border: 2px solid #555;
+    border-radius: 10px;
+    box-shadow: 0 0 8px #000;
+    display: flex;
+    color: #eee;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: 0.2s;
+    margin-right: 10px;
+}
+
+.buttonHome:hover {
+    border-color: #70aaff;
+    box-shadow: 0 0 10px #70aaff;
+}
+
+.buttonHome.selected {
+    border-color: #4caf50;
+    box-shadow: 0 0 12px #4caf50;
+}
+
+.searchButton {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(#3b3b3b, #2b2b2b);
+    border: 2px solid #555;
+    border-radius: 10px;
+    box-shadow: 0 0 8px #000;
+    display: flex;
+    color: #eee;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: 0.2s;
+    margin-right: 10px;
+}
+
+.searchButton:hover {
+    border-color: #70aaff;
+    box-shadow: 0 0 10px #70aaff;
+}
+
+.searchButton.selected {
+    border-color: #4caf50;
+    box-shadow: 0 0 12px #4caf50;
+}
+
+/* Conteneur du dropdown */
+.dropdown {
+    position: relative; /* important */
+    display: inline-block;
+}
+
+/* Le menu flottant */
+.dropdown-content {
+    position: absolute;
+    top: 100%;      /* juste en dessous */
+    left: 0;
+    display: none;
+    background: #1e1e1e;
+    min-width: 160px;
+    border-radius: 6px;
+    box-shadow: 0px 4px 8px rgba(0,0,0,0.4);
+    z-index: 9999;  /* passe au-dessus de tout */
+}
+
+/* Boutons internes */
+.dropdown-content button {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    background: none;
+    color: white;
+    text-align: left;
+    cursor: pointer;
+}
+
+.dropdown-content button:hover {
+    background: #333;
+}
+
+/* Classe visible */
+.show {
+    display: block;
+}
+
+@media (max-width: 800px) {
+    .layout {
+        flex-direction: column;
+        font-size: large;
+        width: 90%;
+        padding: 0px 5%;
+        gap: 0;
+        justify-content: center;
+        align-items: normal;
+    }
+
+    .container {
+        /* max-width: 80%; */
+        min-width: 100%;
+        padding: 0;
+    }
+
+    #inventories {
+        width: 90%;
+        border-collapse: collapse;
+        table-layout: auto;   /* ajuste les colonnes automatiquement */
+        /* width: 100%; */          /* prend toute la place donnée */
+        overflow-x: auto;
+        display: block;
+        margin-left: 5%;
+    }
+    
+    
+    .equip-slots{
+        flex-direction: row;
+        /* gap: 0px; */
+        /* flex-wrap: wrap; */
+        justify-content: space-between;
+    }
+
+    .slot-infos{
+        width: 100%;
+        /* margin: 0px 5%; */
+        padding: 0;
+    }
+    
+    .searchBar{/* width: 100%; */margin: 5%;width: 90%;}
+    
 }

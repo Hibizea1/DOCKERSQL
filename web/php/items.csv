@@ -1,7 +1,0 @@
-id,name,type,rarity,Item_ID,Price,mesh_path
-39,crystalBow,EEquipmentType::Weapon,0,0,1,
-40,curvedBow,EEquipmentType::Weapon,0,1,1,
-41,test,EEquipmentType::Weapon,0,2,1,
-42,test1,EEquipmentType::Weapon,0,3,1,
-43,test5,EEquipmentType::Weapon,0,4,1,
-44,test6,EEquipmentType::Weapon,0,5,1,

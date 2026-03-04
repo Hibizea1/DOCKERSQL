@@ -7,17 +7,40 @@
 </head>
 <body>
 <div class="login-box">
-    <h2>Connection</h2>
+    <h2 id="form-title">Connexion</h2>
 
+    <!-- Formulaire de connexion -->
     <form id="loginForm">
         <label for="email">Mail :</label>
-        <input type="email" id="email" name="email" required>
+        <input type="text" id="email" name="email" required>
 
         <label for="password">Password :</label>
         <input type="password" id="password" name="password" required>
 
         <button type="submit">Connect</button>
     </form>
+
+    <!-- Formulaire d'inscription (initialement caché) -->
+    <form id="signupForm" style="display: none;">
+        <label for="signup-pseudo">Pseudo :</label>
+        <input type="text" id="signup-pseudo" name="signup-pseudo" required>
+
+        <label for="signup-email">Mail :</label>
+        <input type="text" id="signup-email" name="signup-email" required>
+
+        <label for="signup-password">Password :</label>
+        <input type="password" id="signup-password" name="signup-password" required>
+
+        <label for="signup-password2">Confirm Password :</label>
+        <input type="password" id="signup-password2" name="signup-password2" required>
+
+        <button type="submit">Sign Up</button>
+    </form>
+
+    <!-- Bouton switch -->
+    <p>
+        <button id="toggleForm" type="button">Pas encore inscrit ? S'inscrire</button>
+    </p>
 </div>
 
 <script src="../assets/js/login.js"></script>

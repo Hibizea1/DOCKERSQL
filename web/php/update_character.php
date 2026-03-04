@@ -11,7 +11,7 @@ use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use App\Log;
 
-$jwtConfig = require __DIR__ . '/../config/jwt.php';
+$jwtConfig = require __DIR__ . '/../../config/jwt.php';
 
 /* =========================
    Vérification JWT
@@ -59,8 +59,13 @@ $character = $data['character'];
 $xp    = $character['xp']    ?? null;
 $level = $character['level'] ?? null;
 $gold  = $character['gold']  ?? null;
+$stamina  = $character['stamina']  ?? null;
+$health  = $character['health']  ?? null;
+$intelligence  = $character['intelligence']  ?? null;
+$mana  = $character['mana']  ?? null;
+$strength = $character['strength']  ?? null;
 
-if ($xp === null || $level === null || $gold === null) {
+if ($xp === null || $level === null || $gold === null || $stamina === null || $health === null || $intelligence === null || $mana === null|| $strength === null) {
     Log::error("Character data invalid: missing xp, level or gold", "character");
     echo json_encode(["status" => "characters_data_invalid"]);
     exit;
@@ -72,6 +77,11 @@ if ($xp === null || $level === null || $gold === null) {
 UpdateCharacter($conn, $userId, [
     'xp'    => (int)$xp,
     'gold'  => (int)$gold,
+    'stamina'  => (int)$stamina,
+    'health'  => (int)$health,
+    'intelligence'  => (int)$intelligence,
+    'mana'  => (int)$mana,
+    'strengh'  => (int)$strength,
     'level' => (int)$level
 ]);
 

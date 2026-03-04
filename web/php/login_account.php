@@ -111,6 +111,9 @@ if(!$character){
 
 Log::info("Character found", $logFile);
 
+$inventories = GetAllItemsFromUserId($conn, $userId);
+$equipment = GetAllEquipmentFromUserId($conn, $userId);
+
 /* =========================
    Réponse
 ========================= */
@@ -118,5 +121,7 @@ echo json_encode([
     "status"        => "success",
     "access_token" => $accessToken,
     "refresh_token"=> $refreshToken,
-    "character"    => $character
+    "character"    => $character,
+    "inventories"  => $inventories,
+    "equipment"    => $equipment
 ]);

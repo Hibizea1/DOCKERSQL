@@ -7,7 +7,7 @@ use Firebase\JWT\JWT;
 use Firebase\JWT\Key;
 use App\Log;
 
-$jwtConfig = require __DIR__ . '/../config/jwt.php';
+$jwtConfig = require __DIR__ . '/../../config/jwt.php';
 
 
 /* =========================
@@ -43,7 +43,7 @@ try {
 
 $data = json_decode(file_get_contents("php://input"), true);
 
-if (!isset($data["result"]) || !is_array($data["result"])) {
+if (!isset($data["Items"]) || !is_array($data["Items"]) || !isset($data["Equipment"]) || !is_array($data["Equipment"])) {
     Log::error("Invalid format for inventories save", "inventories");
     echo json_encode(["status" => "failed", "cause" => "invalid_format"]);
     exit;
@@ -68,9 +68,8 @@ $charId = $character["id"];
 
 $conn->query("DELETE FROM inventories WHERE character_id = $charId");
 
-$responseItems = [];
 
-foreach ($data["result"] as $entry) {
+foreach ($data["Items"] as $entry) {
 
     if (!array_key_exists("item_id", $entry)) {
         Log::error("Missing item_id in inventory entry", "inventories");
@@ -112,14 +111,89 @@ foreach ($data["result"] as $entry) {
         'quantity' => $quantity
     ]);
 
-    $responseItems[] = [
-        "item_id" => $item_id,
-        "rarity" => $rarity,
-        "lvl" => $lvl,
-        "instance_item_id" => $instanceItemID
-    ];
 }
 
+$delete = $conn->prepare("
+    DELETE FROM equipment WHERE characters_id = ?
+");
+$delete->bind_param("i", $charId);
+$delete->execute();
+
+if ($delete->affected_rows > 0) {
+    Log::info("Delete", 'inventories');
+} else {
+        Log::info("Nothing Delete", 'inventories');
+}
+
+$delete->close();
+
+foreach ($data["Equipment"] as $entry) {
+
+    if (!array_key_exists("item_id", $entry)) {
+        Log::error("Missing item_id in inventory entry", "inventories");
+        echo json_encode(["status" => "failed", "cause" => "missing_item_id"]);
+        exit;
+    }
+
+    $item_id = intval($entry["item_id"]);
+    $rarity  = intval($entry["rarity"] ?? 1);
+    $lvl     = intval($entry["lvl"] ?? 1);
+
+    /* Vérifie si instance_items existe */
+    $checkItem = $conn->prepare("
+        SELECT id FROM instance_items
+        WHERE item_id = ? AND rarity = ? AND lvl = ?
+    ");
+    $checkItem->bind_param("iii", $item_id, $rarity, $lvl);
+    $checkItem->execute();
+    $checkItem->bind_result($instanceItemID);
+
+    $found = $checkItem->fetch();
+    $checkItem->close();
+
+    if (!$found) {
+
+        $createItem = $conn->prepare("
+            INSERT INTO instance_items (item_id, rarity, lvl)
+            VALUES (?, ?, ?)
+        ");
+        $createItem->bind_param("iii", $item_id, $rarity, $lvl);
+        $createItem->execute();
+
+        $instanceItemID = $createItem->insert_id;
+        $createItem->close();
+
+    } else {
+
+        // Vérifie si déjà équipé
+        $checkItemExist = $conn->prepare("
+            SELECT 1 
+            FROM equipment
+            WHERE characters_id = ?
+              AND item_id = ?
+            LIMIT 1
+        ");
+        $checkItemExist->bind_param("ii", $charId, $instanceItemID);
+        $checkItemExist->execute();
+        $resultExist = $checkItemExist->get_result();
+
+        if ($resultExist->num_rows > 0) {
+            echo json_encode(["error" => "Item already equipped"]);
+            $checkItemExist->close();
+            continue; // passe au suivant
+        }
+
+        $checkItemExist->close();
+    }
+
+    // Ajout inventaire ( quantité = 1 par défaut )
+    $quantity = 1;
+    InsertIntoTable('equipment', [
+        'characters_id' => $charId,
+        'item_id' => $instanceItemID,
+        'quantity' => $quantity
+    ]);
+}
 /* =========================
    Réponse finale
 ========================= */
@@ -127,5 +201,4 @@ foreach ($data["result"] as $entry) {
 Log::info("Inventories saved successfully for user: $userId", "inventories");
 echo json_encode([
     "status" => "success",
-    "saved_items" => $responseItems
 ]);
