@@ -11,5 +11,10 @@
     "psr-4": {
       "App\\": "src/"
     }
+  },
+  "config": {
+    "platform": {
+      "ext-sodium": "7.4"
+    }
   }
 }
