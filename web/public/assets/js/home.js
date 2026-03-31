@@ -21,6 +21,9 @@ document.getElementById("name").textContent = "Username : " + pseudo;
 
 //BUTTON
 document.getElementById("logOutButton").addEventListener("click", logoutUser);
+document.getElementById("SettingsButton").addEventListener("click", () => {
+    window.location.href = "settings.html";
+});
 document.getElementById("profileBtn").addEventListener("click", function () {
     document.getElementById("profileDropdown").classList.toggle("show");
 });

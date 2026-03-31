@@ -65,6 +65,12 @@ InsertIntoTable('characters', [
 ]);
 Log::info("Character created", $logFile);
 
+InsertIntoTable('Param', [
+    'user_id' => $userId,
+    'darkMode' => 0,
+    'inventorypreview' => 0
+]);
+
 /* =========================
    ACCESS TOKEN (JWT)
 ========================= */
