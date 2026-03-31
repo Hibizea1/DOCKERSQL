@@ -10,11 +10,11 @@ $env = static function (string $key, string $default = ''): string {
 };
 
 return [
-    'host'       => $env('MAIL_HOST',       'smtp.example.com'),
-    'port'       => (int) $env('MAIL_PORT', '587'),
-    'username'   => $env('MAIL_USERNAME',   'no-reply@example.com'),
-    'password'   => $env('MAIL_PASSWORD',   ''),
-    'encryption' => $env('MAIL_ENCRYPTION', 'tls'),
-    'from_email' => $env('MAIL_FROM_EMAIL', 'no-reply@example.com'),
-    'from_name'  => $env('MAIL_FROM_NAME',  'Unreal Game'),
+    'host'       => 'mailhog',
+    'port'       => 1025,
+    'username'   => null,
+    'password'   => null,
+    'encryption' => null,
+    'from_email' => 'no-reply@local.test',
+    'from_name'  => 'Unreal Game (Local)',
 ];

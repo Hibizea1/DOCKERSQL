@@ -28,13 +28,16 @@ class Mailer
             $mail->SMTPAuth   = true;
             $mail->Username   = $this->config['username'];
             $mail->Password   = $this->config['password'];
-            $mail->SMTPSecure = match ($this->config['encryption']) {
+            if (!empty($config['encryption'])) {
+                $mail->SMTPSecure = $config['encryption'];
+                $mail->SMTPSecure = match ($this->config['encryption']) {
                 'ssl'  => PHPMailer::ENCRYPTION_SMTPS,
                 'tls'  => PHPMailer::ENCRYPTION_STARTTLS,
                 default => throw new MailerException("Unsupported encryption: {$this->config['encryption']}"),
             };
-            $mail->Port       = $this->config['port'];
-
+        }
+        $mail->Port       = $this->config['port'];
+        
             $mail->setFrom($this->config['from_email'], $this->config['from_name']);
             $mail->addAddress($toEmail, $toName);
 
@@ -47,7 +50,7 @@ class Mailer
             $mail->send();
             return true;
         } catch (MailerException $e) {
-            Log::error('Email sending failed: ' . $mail->ErrorInfo, 'email');
+            Log::error('Email sending failed: ' . $e, 'email');
             return false;
         }
     }
