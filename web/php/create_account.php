@@ -9,8 +9,10 @@ require_once __DIR__ . '/vendor/autoload.php';
 
 use Firebase\JWT\JWT;
 use App\Log;
+use App\Mailer;
 
-$jwtConfig = require __DIR__ . '/../../config/jwt.php';
+$jwtConfig   = require __DIR__ . '/../../config/jwt.php';
+$emailConfig = require __DIR__ . '/../../config/email.php';
 $logFile = "create";
 /* =========================
    Lecture input
@@ -70,6 +72,16 @@ InsertIntoTable('Param', [
     'darkMode' => 0,
     'inventorypreview' => 0
 ]);
+
+/* =========================
+   Envoi email de bienvenue
+========================= */
+$mailer = new Mailer($emailConfig);
+if ($mailer->sendWelcome($email, $username)) {
+    Log::info("Welcome email sent to $email", $logFile);
+} else {
+    Log::warning("Welcome email could not be sent to $email", $logFile);
+}
 
 /* =========================
    ACCESS TOKEN (JWT)

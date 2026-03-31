@@ -8,6 +8,14 @@ services:
       - db
     ports:
       - 8080:80
+    environment:
+      MAIL_HOST: ${MAIL_HOST:-smtp.example.com}
+      MAIL_PORT: ${MAIL_PORT:-587}
+      MAIL_USERNAME: ${MAIL_USERNAME:-no-reply@example.com}
+      MAIL_PASSWORD: ${MAIL_PASSWORD:-}
+      MAIL_ENCRYPTION: ${MAIL_ENCRYPTION:-tls}
+      MAIL_FROM_EMAIL: ${MAIL_FROM_EMAIL:-no-reply@example.com}
+      MAIL_FROM_NAME: ${MAIL_FROM_NAME:-Unreal Game}
     volumes:
       - ./web/public:/var/www/html/public
       - ./web/php:/var/www/html/php
