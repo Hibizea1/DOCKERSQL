@@ -1,0 +1,1 @@
+{"biome_categories":[{"slug":"volcanic","name":"Volcanic","description":"Hot and dangerous biomes."}],"biomes":[{"slug":"obsidian-wastes","name":"Obsidian Wastes","description":"End-game biome with boss-grade threats.","level_min":35,"level_max":60,"categories":["endgame","volcanic"]}]}

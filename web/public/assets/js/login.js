@@ -35,20 +35,26 @@ loginForm.addEventListener("submit", async function(e) {
     try {
         const response = await fetch('/php/login_web.php', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Client-Type': 'web'
+            },
+            credentials: 'include',
             body: JSON.stringify({ email, password })
         });
 
         const data = await response.json();
         if (data.status === "success") {
-            sessionStorage.setItem("username", data.username);
+            sessionStorage.setItem("username", data.username || email);
             sessionStorage.setItem("data", JSON.stringify(data));
             sessionStorage.setItem("access_token", data.access_token);
-            sessionStorage.setItem("refresh_token", data.refresh_token);
+            // Web flow uses HttpOnly cookie for refresh token.
+            sessionStorage.removeItem("refresh_token");
             window.location.href = '/pages/home.html';
             console.log(data);
         } else {
-            alert(data.message || "Erreur de connexion");
+            const fieldErrors = data.field_errors ? JSON.stringify(data.field_errors) : "";
+            alert(data.message || data.status || fieldErrors || "Erreur de connexion");
         }
     } catch (err) {
         console.error("Erreur connexion :", err);
@@ -75,7 +81,11 @@ signupForm.addEventListener("submit", async function(e) {
     try {
         const response = await fetch('/php/create_account.php', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: {
+                'Content-Type': 'application/json',
+                'X-Client-Type': 'web'
+            },
+            credentials: 'include',
             body: JSON.stringify({ username, email, password })
         });
 
@@ -89,7 +99,8 @@ signupForm.addEventListener("submit", async function(e) {
             formTitle.textContent = "Connexion";
             toggleBtn.textContent = "Pas encore inscrit ? S'inscrire";
         } else {
-            alert(data || "Erreur lors de la création du compte");
+            const fieldErrors = data.field_errors ? JSON.stringify(data.field_errors) : "";
+            alert(data.message || data.status || fieldErrors || "Erreur lors de la création du compte");
             console.error("Erreur inscription :", data);
         }
     } catch (err) {

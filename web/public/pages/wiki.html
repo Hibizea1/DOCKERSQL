@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wiki du jeu</title>
+    <link rel="stylesheet" href="../assets/css/home.css">
+    <link rel="stylesheet" href="../assets/css/wiki.css">
+</head>
+<body class="home-page">
+    <header class="searchBar home-searchbar">
+        <div class="dropdown menu-dropdown">
+            <button class="buttonHome" id="menuToggleButton" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="wikiMenuDropdown">Menu</button>
+            <div id="wikiMenuDropdown" class="dropdown-content" role="menu">
+                <button id="goHomeButton" type="button" role="menuitem">Accueil</button>
+                <button id="goProfileButton" type="button" role="menuitem">Profil</button>
+                <button id="goSettingsButton" type="button" role="menuitem">Settings</button>
+                <button id="goWikiButton" type="button" role="menuitem">Wiki du jeu</button>
+                <button id="goLoginButton" type="button" role="menuitem">Connexion</button>
+            </div>
+        </div>
+        <div class="search-center">
+            <input type="text" id="searchInput" placeholder="Rechercher un utilisateur">
+            <button class="searchButton" id="searchButton" type="button">Rechercher</button>
+        </div>
+        <div class="search-spacer" aria-hidden="true"></div>
+    </header>
+
+    <section class="home-hero" aria-label="Banniere wiki">
+        <div class="hero-title-block">
+            <span class="hero-subtitle">Reference</span>
+            <h1>Wiki DOCKERSQL</h1>
+            <p>Toutes les informations de l'univers, des objets et des mecaniques.</p>
+        </div>
+    </section>
+
+    <main class="home-layout">
+        <section class="wiki-app">
+            <aside class="wiki-sidebar">
+                <h2>Categories</h2>
+                <div id="wikiCategories" class="wiki-category-list"></div>
+            </aside>
+
+            <section class="wiki-content">
+                <div class="wiki-toolbar">
+                    <input id="wikiSearch" type="text" placeholder="Rechercher une page wiki">
+                    <button id="wikiSearchBtn" class="searchButton" type="button">Chercher</button>
+                </div>
+
+                <section id="wikiItemsCatalog" class="wiki-items-catalog" style="display:none;">
+                    <h2 id="wikiCatalogTitle">Items</h2>
+                    <div id="wikiItemsList" class="wiki-items-list"></div>
+                </section>
+
+                <div id="wikiCards" class="wiki-cards"></div>
+
+                <article id="wikiArticle" class="wiki-article" style="display:none;">
+                    <header>
+                        <h2 id="wikiArticleTitle"></h2>
+                        <p id="wikiArticleMeta" class="wiki-meta"></p>
+                    </header>
+                    <pre id="wikiArticleContent" class="wiki-body"></pre>
+                </article>
+            </section>
+        </section>
+    </main>
+
+    <script src="../assets/js/auth.js"></script>
+    <script src="../assets/js/home.js"></script>
+    <script src="../assets/js/wiki.js"></script>
+</body>
+</html>

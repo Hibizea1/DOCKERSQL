@@ -34,6 +34,9 @@ Thumbs.db
 # Docker
 *.tar
 
+# Local trusted TLS certificates
+certs/
+
 # Build artifacts
 dist/
 build/

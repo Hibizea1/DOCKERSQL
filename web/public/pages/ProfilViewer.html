@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Home</title>
+    <title>Profil joueur</title>
     <link rel="stylesheet" href="../assets/css/home.css">
     <link rel="stylesheet" href="../assets/css/profil.css">
 </head>
@@ -10,8 +10,8 @@
 
     <header class="searchBar home-searchbar">
         <div class="dropdown menu-dropdown">
-            <button class="buttonHome" id="menuToggleButton" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="profileMenuDropdown">Menu</button>
-            <div id="profileMenuDropdown" class="dropdown-content" role="menu">
+            <button class="buttonHome" id="menuToggleButton" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="viewerMenuDropdown">Menu</button>
+            <div id="viewerMenuDropdown" class="dropdown-content" role="menu">
                 <button id="goHomeButton" type="button" role="menuitem">Accueil</button>
                 <button id="goProfileButton" type="button" role="menuitem">Profil</button>
                 <button id="goSettingsButton" type="button" role="menuitem">Settings</button>
@@ -26,12 +26,10 @@
         </div>
         <div class="search-spacer" aria-hidden="true"></div>
     </header>
-    
-    
+
 <main class="profile-main">
 <div class="layout profile-layout">
 
-    <!-- LEFT : EQUIPMENT + DETAILS -->
     <section class="equipment-panel" aria-label="Equipment panel">
         <h2>Equipment</h2>
 
@@ -72,14 +70,13 @@
         </div>
     </section>
 
-    <!-- RIGHT : PROFILE + STATS + INVENTORY -->
     <div class="container">
-        <h2>Profile</h2>
+        <h2>Profile Viewer</h2>
 
         <form id="profile">
             <div class="container-header">
-                <span id="name">Pseudo : JohnDoe</span>
-                <span id="level">Level : 12</span>
+                <span id="name">Pseudo : -</span>
+                <span id="level">Level : -</span>
             </div>
 
             <section class="player-stats-card" aria-label="Player stats">
@@ -96,6 +93,8 @@
                 </div>
             </section>
 
+            <p id="inventoryHiddenMessage" style="display:none; margin-top:14px; color:#cfe0f5;">Ce joueur n'autorise pas l'affichage de son inventaire.</p>
+
             <table id="inventories">
                 <thead>
                 <tr>
@@ -111,11 +110,10 @@
             </table>
         </form>
     </div>
-
 </div>
 </main>
 
 <script src="../assets/js/auth.js"></script>
-<script src="../assets/js/profil.js"></script>
+<script src="../assets/js/profilViewer.js"></script>
 </body>
 </html>

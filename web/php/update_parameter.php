@@ -1,10 +1,15 @@
 <?php
 header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Headers: Content-Type, Authorization");
+header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Client-Type");
+header("Access-Control-Allow-Methods: POST, OPTIONS");
 header("Content-Type: application/json");
 
+if (($_SERVER["REQUEST_METHOD"] ?? "") === "OPTIONS") {
+    http_response_code(204);
+    exit;
+}
+
 require "db.php";
-require "Helper.php";
 require_once __DIR__ . '/vendor/autoload.php';
 
 use Firebase\JWT\JWT;
@@ -12,15 +17,13 @@ use Firebase\JWT\Key;
 use App\Log;
 
 $jwtConfig = require __DIR__ . '/../../config/jwt.php';
+$logFile = "parameter";
 
-/* =========================
-   Vérification JWT
-========================= */
 $headers = getallheaders();
 $authHeader = $headers['Authorization'] ?? '';
 
 if (!preg_match('/Bearer\s(\S+)/', $authHeader, $matches)) {
-    Log::warning("Missing JWT token for character update", "character");
+    Log::warning("Missing JWT token for parameter update", $logFile);
     http_response_code(401);
     echo json_encode(["status" => "missing_token"]);
     exit;
@@ -32,52 +35,75 @@ try {
         new Key($jwtConfig['secret'], $jwtConfig['algo'])
     );
     $userId = (int)$decoded->uid;
-    Log::info("JWT validated for character update, user: $userId", "character");
 } catch (Exception $e) {
-    Log::error("Invalid JWT for character update: " . $e->getMessage(), "character");
+    Log::error("Invalid JWT for parameter update: " . $e->getMessage(), $logFile);
     http_response_code(401);
+    echo json_encode(["status" => "invalid_token"]);
+    exit;
+}
+
+$rawInput = file_get_contents("php://input");
+$data = json_decode($rawInput ?: "", true);
+
+if (!is_array($data)) {
+    Log::error("Invalid JSON for parameter update", $logFile);
+    http_response_code(400);
+    echo json_encode(["status" => "invalid_json"]);
+    exit;
+}
+
+$payload = isset($data['param']) && is_array($data['param']) ? $data['param'] : $data;
+
+$darkMode = $payload['darkMode'] ?? null;
+$inventoryPreview = $payload['inventorypreview'] ?? $payload['inventoryPreview'] ?? null;
+
+if ($darkMode === null || $inventoryPreview === null) {
+    Log::error("Missing parameter fields", $logFile);
+    http_response_code(400);
     echo json_encode([
-        "status" => "invalid_token",
-        "error"  => $e->getMessage()
+        "status" => "invalid_data",
+        "required" => ["darkMode", "inventorypreview"]
     ]);
     exit;
 }
 
-/* =========================
-   Modification des parametre
-========================= */
+$darkMode = (int)(bool)$darkMode;
+$inventoryPreview = (int)(bool)$inventoryPreview;
 
-$data = json_decode(file_get_contents("php://input"), true);
+$update = $conn->prepare("UPDATE Param SET darkMode = ?, inventorypreview = ? WHERE user_id = ?");
+$update->bind_param("iii", $darkMode, $inventoryPreview, $userId);
+$update->execute();
 
-if (!$data || !isset($data['param'])) {
-    Log::error("Invalid data for param update", "Parameter");
-    echo json_encode(["status" => "invalid_data"]);
+if ($update->errno) {
+    Log::error("Update failed: " . $update->error, $logFile);
+    http_response_code(500);
+    echo json_encode(["status" => "db_error"]);
     exit;
 }
 
-$param = $data['param'];
+$check = $conn->prepare("SELECT user_id FROM Param WHERE user_id = ? LIMIT 1");
+$check->bind_param("i", $userId);
+$check->execute();
+$exists = $check->get_result()->num_rows > 0;
 
-$inventoryPreview = $param['inventorypreview'];
-$darkMode = $param['darkMode'];
+if (!$exists) {
+    $insert = $conn->prepare("INSERT INTO Param (user_id, darkMode, inventorypreview) VALUES (?, ?, ?)");
+    $insert->bind_param("iii", $userId, $darkMode, $inventoryPreview);
+    $insert->execute();
 
-if($darkMode === null || $inventoryPreview === null){
-    Log::error("Invalid data", "Parameter");
-    echo json_encode(["status" => "invalid_data"]);
-    exit;
+    if ($insert->errno) {
+        Log::error("Insert failed: " . $insert->error, $logFile);
+        http_response_code(500);
+        echo json_encode(["status" => "db_error"]);
+        exit;
+    }
 }
 
-$stmt = $conn->prepare("
-    UPDATE Param 
-    SET darkMode = ?, inventoryPreview = ?
-    WHERE user_id = ?
-");
-$stmt->bind_param("iii", $darkMode, $inventoryPreview, $userId);
-
-$stmt->execute();
-
-if ($stmt->affected_rows <= 0) {
-    log::error("No Row detect", "Parameter");
-    exit;
-}
-
-log::info("Parameters updated", "Parameter");
+Log::info("Parameters updated for user $userId", $logFile);
+echo json_encode([
+    "status" => "success",
+    "params" => [
+        "darkMode" => $darkMode,
+        "inventorypreview" => $inventoryPreview
+    ]
+]);

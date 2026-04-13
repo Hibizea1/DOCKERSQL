@@ -53,6 +53,15 @@ $inventoriesBrut = GetAllItemsFromInventoryAndUserID($conn, $userId);
 // Équipement
 $equipmentBrut = GetAllItemsFromEquipmentAndUserID($conn, $userId);
 
+$stmtParam = $conn->prepare("SELECT darkMode, inventorypreview FROM Param WHERE user_id = ? LIMIT 1");
+$stmtParam->bind_param("i", $userId);
+$stmtParam->execute();
+$paramResult = $stmtParam->get_result()->fetch_assoc();
+
+$params = [
+    "darkMode" => (int)($paramResult['darkMode'] ?? 0),
+    "inventorypreview" => (int)($paramResult['inventorypreview'] ?? 0)
+];
 
 
 // -------------------------------
@@ -64,5 +73,6 @@ echo json_encode([
     "username" => $username,
     "character" => $character,
     "inventories" => $inventoriesBrut,
-    "equipment" => $equipmentBrut
+    "equipment" => $equipmentBrut,
+    "params" => $params
 ]);

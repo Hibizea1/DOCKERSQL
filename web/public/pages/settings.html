@@ -5,24 +5,53 @@
     <title>Settings</title>
     <link rel="stylesheet" href="../assets/css/home.css">
 </head>
-<body>
-<div class="settings-container">
-    <h2>Settings</h2>
+<body class="home-page">
+    <header class="searchBar home-searchbar">
+        <div class="dropdown menu-dropdown">
+            <button class="buttonHome" id="menuToggleButton" type="button" aria-haspopup="true" aria-expanded="false" aria-controls="settingsMenuDropdown">Menu</button>
+            <div id="settingsMenuDropdown" class="dropdown-content" role="menu">
+                <button id="goHomeButton" type="button" role="menuitem">Accueil</button>
+                <button id="goProfileButton" type="button" role="menuitem">Profil</button>
+                <button id="goSettingsButton" type="button" role="menuitem">Settings</button>
+                <button id="goWikiButton" type="button" role="menuitem">Wiki du jeu</button>
+                <button id="goLoginButton" type="button" role="menuitem">Connexion</button>
+            </div>
+        </div>
+        <div class="search-center">
+            <input type="text" id="searchInput" placeholder="Rechercher un utilisateur">
+            <button class="searchButton" id="searchButton" type="button">Rechercher</button>
+        </div>
+        <div class="search-spacer" aria-hidden="true"></div>
+    </header>
 
-    <div class="setting-item">
-        <input type="checkbox" id="inventoryPreview">
-        <label for="inventoryPreview">Allow player to see your inventory</label>
-    </div>
+    <section class="home-hero" aria-label="Banniere settings">
+        <div class="hero-title-block">
+            <span class="hero-subtitle">Parametres</span>
+            <h1>Settings</h1>
+            <p>Configure ton experience de jeu.</p>
+        </div>
+    </section>
 
-    <div class="setting-item">
-        <input type="checkbox" id="notifications">
-        <label for="notifications">Enable Notifications</label>
-    </div>
+    <main class="home-layout">
+        <section class="container" style="width: 100%;">
+            <h2>Settings</h2>
 
-    <button id="saveSettings">Save Settings</button>
-</div>
+            <div class="setting-item">
+                <input type="checkbox" id="inventoryPreview">
+                <label for="inventoryPreview">Allow player to see your inventory</label>
+            </div>
+
+            <div class="setting-item">
+                <input type="checkbox" id="notifications">
+                <label for="notifications">Enable Dark Mode</label>
+            </div>
+
+            <button class="searchButton" id="saveSettings" type="button">Save Settings</button>
+        </section>
+    </main>
+
+    <script src="../assets/js/auth.js"></script>
+    <script src="../assets/js/home.js"></script>
+    <script src="../assets/js/settings.js"></script>
 </body>
-
-<script src="../assets/js/settings.js"></script>
-
 </html>

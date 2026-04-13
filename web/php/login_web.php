@@ -1,7 +1,23 @@
 <?php
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Headers: Content-Type, Authorization");
+// CORS applies to browser clients (web). Unreal native client is not constrained by CORS.
+$allowedOriginsEnv = getenv("CORS_ALLOWED_ORIGINS") ?: "https://localhost:8443,http://localhost:8080";
+$allowedOrigins = array_filter(array_map("trim", explode(",", $allowedOriginsEnv)));
+$origin = $_SERVER["HTTP_ORIGIN"] ?? "";
+
+if ($origin !== "" && in_array($origin, $allowedOrigins, true)) {
+    header("Access-Control-Allow-Origin: " . $origin);
+    header("Access-Control-Allow-Credentials: true");
+}
+
+header("Vary: Origin");
+header("Access-Control-Allow-Headers: Content-Type, Authorization, X-Client-Type");
+header("Access-Control-Allow-Methods: POST, OPTIONS");
 header("Content-Type: application/json");
+
+if (($_SERVER["REQUEST_METHOD"] ?? "") === "OPTIONS") {
+    http_response_code(204);
+    exit;
+}
 
 require "db.php";
 require "Helper.php";
@@ -12,6 +28,13 @@ use Firebase\JWT\JWT;
 
 $jwtConfig = require __DIR__ . '/../../config/jwt.php';
 $logFile = "login";
+
+$clientTypeHeader = strtolower(trim((string)($_SERVER["HTTP_X_CLIENT_TYPE"] ?? "")));
+if ($clientTypeHeader === "web" || $clientTypeHeader === "game") {
+    $clientType = $clientTypeHeader;
+} else {
+    $clientType = ($origin !== "") ? "web" : "game";
+}
 
 /* =========================
    Lecture input
@@ -95,6 +118,16 @@ $update = $conn->prepare(
 );
 $update->bind_param("si", $refreshToken, $userId);
 $update->execute();
+
+if ($clientType === "web") {
+    setcookie("refresh_token", $refreshToken, [
+        "expires" => time() + (30 * 24 * 60 * 60),
+        "path" => "/",
+        "secure" => true,
+        "httponly" => true,
+        "samesite" => "Lax"
+    ]);
+}
 /* =========================
    Character
 ========================= */
@@ -110,10 +143,23 @@ Log::info("Character found", $logFile);
 /* =========================
    Réponse
 ========================= */
-echo json_encode([
-    "status"        => "success",
-    "access_token" => $accessToken,
-    "refresh_token"=> $refreshToken,
-    "username" => $username,
-    "character" => $character
-]);
+if ($clientType === "web") {
+    $response = [
+        "status"       => "success",
+        "access_token" => $accessToken,
+        "username"     => $username,
+        "character"    => $character,
+        "client_type"  => "web"
+    ];
+} else {
+    $response = [
+        "status"        => "success",
+        "access_token"  => $accessToken,
+        "refresh_token" => $refreshToken,
+        "username"      => $username,
+        "character"     => $character,
+        "client_type"   => "game"
+    ];
+}
+
+echo json_encode($response);

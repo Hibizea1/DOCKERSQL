@@ -63,6 +63,40 @@ function GetUserId(mysqli $conn, string $username): ?int
     return $row ? (int)$row['id'] : null;
 }
 
+function CreateUserIfNotExists(mysqli $conn, string $username, string $email, string $passwordHash): array
+{
+    $check = $conn->prepare("SELECT id FROM users WHERE username = ? OR email = ? LIMIT 1");
+    $check->bind_param("ss", $username, $email);
+    $check->execute();
+    $check->store_result();
+
+    if ($check->num_rows > 0) {
+        return [
+            "created" => false,
+            "exists" => true,
+            "user_id" => null,
+        ];
+    }
+
+    $insert = $conn->prepare("INSERT INTO users (username, email, password) VALUES (?, ?, ?)");
+    $insert->bind_param("sss", $username, $email, $passwordHash);
+    $created = $insert->execute();
+
+    if (!$created) {
+        return [
+            "created" => false,
+            "exists" => false,
+            "user_id" => null,
+        ];
+    }
+
+    return [
+        "created" => true,
+        "exists" => false,
+        "user_id" => (int)$conn->insert_id,
+    ];
+}
+
 function GetCharacterFromUserId(mysqli $conn,string $user_id): array
 {
     $stmt = $conn->prepare("SELECT * FROM characters WHERE user_id = ? LIMIT 1");
@@ -71,6 +105,11 @@ function GetCharacterFromUserId(mysqli $conn,string $user_id): array
 
     $result = $stmt->get_result();
     $characters = $result->fetch_all(MYSQLI_ASSOC);
+
+    foreach ($characters as &$character) {
+        unset($character['user_id']);
+    }
+    unset($character);
 
     return $characters ?: [];
 }

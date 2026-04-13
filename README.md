@@ -1,5 +1,123 @@
 # CDA-API
 
+## HTTPS (site + backend)
+
+La stack est configuree pour servir le site et le backend en HTTPS dans le service `php`.
+
+- Site: `https://localhost:8443/`
+- Backend: `https://localhost:8443/php/...`
+
+Pour supprimer l'alerte navigateur, utilisez un certificat local de confiance avec `mkcert`.
+
+1. Installer `mkcert` (Windows):
+   - `winget install FiloSottile.mkcert`
+2. Generer le certificat local (installe aussi l'autorite locale dans le store de confiance):
+   - `powershell -ExecutionPolicy Bypass -File .\scripts\generate-local-cert.ps1`
+3. Redemarrer la stack:
+   - `docker compose up -d --build`
+
+Le certificat sera lu depuis:
+
+- `certs/server.crt`
+- `certs/server.key`
+
+Pour appliquer la configuration:
+
+```bash
+docker compose up -d --build
+```
+
+Le port HTTP `8080` redirige vers HTTPS `8443`.
+
+## Wiki Sync (Unreal Editor)
+
+Le script `web/php/sync_wiki_game_data.php` est prevu pour etre appele depuis des commandes Unreal Editor afin de synchroniser:
+
+- categories de biomes
+- categories de monstres
+- categories d'items
+- biomes
+- monstres
+- spawns
+- loots
+- liens item <-> categories
+
+### Endpoint
+
+- `POST https://localhost:8443/php/sync_wiki_game_data.php`
+
+### Headers
+
+- `Content-Type: application/json`
+- `X-Client-Type: game`
+- `X-Sync-Token: <secret>` (optionnel, obligatoire si `WIKI_SYNC_SECRET` est configure)
+
+### Payload minimal (exemple)
+
+```json
+{
+  "biome_categories": [
+    { "slug": "starter", "name": "Starter", "description": "Beginner biomes" }
+  ],
+  "monster_categories": [
+    { "slug": "elite", "name": "Elite", "description": "High threat monsters" }
+  ],
+  "item_categories": [
+    { "slug": "weapon", "name": "Weapon", "description": "Offensive equipment" }
+  ],
+  "biomes": [
+    {
+      "slug": "green-plains",
+      "name": "Green Plains",
+      "description": "Low-risk zone",
+      "level_min": 1,
+      "level_max": 12,
+      "categories": ["starter"]
+    }
+  ],
+  "monsters": [
+    {
+      "slug": "slime-scout",
+      "name": "Slime Scout",
+      "description": "Small scouting slime",
+      "level_min": 1,
+      "level_max": 8,
+      "difficulty": "easy",
+      "categories": ["elite"]
+    }
+  ],
+  "spawns": [
+    {
+      "monster_slug": "slime-scout",
+      "biome_slug": "green-plains",
+      "spawn_rate": 48.0,
+      "notes": "Main beginner spawn"
+    }
+  ],
+  "loots": [
+    {
+      "monster_slug": "slime-scout",
+      "item_id": 0,
+      "biome_slug": "green-plains",
+      "drop_rate": 30.0,
+      "min_qty": 1,
+      "max_qty": 1,
+      "notes": "Starter drop"
+    }
+  ],
+  "item_category_links": [
+    {
+      "item_id": 0,
+      "category_slugs": ["weapon"]
+    }
+  ],
+  "deletes": {
+    "biomes": [],
+    "monsters": []
+  }
+}
+```
+
 # File Tree: DOCKERSQL
 
 **Generated:** 2/2/2026, 1:53:25 PM

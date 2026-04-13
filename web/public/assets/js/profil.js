@@ -1,19 +1,14 @@
-// Récupérer le pseudo dans l'URL
 const urlParams = new URLSearchParams(window.location.search);
-const username = urlParams.get('user');
+const usernameFromUrl = (urlParams.get("user") || "").trim();
+const usernameFromSession = (sessionStorage.getItem("username") || "").trim();
+const username = usernameFromUrl || usernameFromSession;
 
-// Si pas de pseudo -> redirection
-if (!username) {
-    window.location.href = "/pages/home.html";
-}
-
-// Objet pour les équipements
-let equippedItems = {
-    Head: null,
-    Chest: null,
-    Pants: null,
-    Boots: null,
-    Weapon: null
+const equippedItems = {
+    head: null,
+    chest: null,
+    pants: null,
+    boots: null,
+    weapon: null
 };
 
 // Récupérer les infos du joueur
@@ -31,11 +26,33 @@ async function getPlayerData() {
         document.getElementById("name").textContent = "Username : " + data.username;
         document.getElementById("level").textContent = "Level : " + data.character[0].level;
 
+        const character = data.character && data.character[0] ? data.character[0] : {};
+        const readStat = (...keys) => {
+            for (const key of keys) {
+                if (character[key] !== undefined && character[key] !== null) {
+                    return character[key];
+                }
+            }
+            return "-";
+        };
+
+        document.getElementById("stat-level").textContent = readStat("level");
+        document.getElementById("stat-xp").textContent = readStat("xp");
+        document.getElementById("stat-gold").textContent = readStat("gold");
+        document.getElementById("stat-health").textContent = readStat("health");
+        document.getElementById("stat-mana").textContent = readStat("mana");
+        document.getElementById("stat-stamina").textContent = readStat("stamina");
+        document.getElementById("stat-strength").textContent = readStat("strenght");
+        document.getElementById("stat-intelligence").textContent = readStat("intelligence");
+
         // Inventaire
         const table = document.getElementById("inventories");
+        const body = table.querySelector("tbody");
+        body.innerHTML = "";
         data.inventories.forEach(item => {
-            const row = table.insertRow();
-            row.insertCell(0).textContent = formatName(item.name);
+            const row = body.insertRow();
+            const nameCell = row.insertCell(0);
+            nameCell.appendChild(createItemWikiLink(item.name));
             row.insertCell(1).textContent = item.rarity;
             row.insertCell(2).textContent = item.lvl;
             row.insertCell(3).textContent = item.price;
@@ -43,9 +60,12 @@ async function getPlayerData() {
             row.insertCell(5).textContent = safeType(item.weapon_type);
         });
 
-        data.equipment.forEach(item => {
+        data.equipment.forEach((item) => {
             placeItemInSlot(item);
         });
+
+        bindSlotInteractions();
+        showItemInfo(equippedItems.head);
 
     } catch (err) {
         console.error("Erreur fetch player :", err);
@@ -56,6 +76,18 @@ function formatName(name) {
   return name.replace(/([A-Z])/g, " $1").replace(/^./, c => c.toUpperCase());
 }
 
+function wikiItemUrl(name) {
+        return `/pages/wiki.html?view=item&item=${encodeURIComponent(name || "")}`;
+}
+
+function createItemWikiLink(name) {
+        const link = document.createElement("a");
+        link.className = "item-wiki-link";
+        link.href = wikiItemUrl(name);
+        link.textContent = formatName(name || "Unknown");
+        return link;
+}
+
 function safeType(typeString) {
     if (!typeString || !typeString.includes("::")) return "None";
     return typeString.split("::")[1];
@@ -63,40 +95,36 @@ function safeType(typeString) {
 
 // Place les items dans les slots
 function placeItemInSlot(item) {
+    const type = item ? safeType(item.equipment_type) : null;
+    const iconPath = item ? "../assets/img/items/" + item.name + ".png" : null;
+    const slotMap = {
+        Head: "head",
+        Chest: "chest",
+        Pants: "pants",
+        Boots: "boots",
+        Weapon: "weapon"
+    };
 
-    let type = item ? safeType(item.equipment_type) : null;
-    let iconPath = item ? "../assets/img/items/" + item.name + ".png" : null;
+    const slotKey = slotMap[type] || null;
+    if (!slotKey) {
+        return;
+    }
 
-    switch(type) {
+    setSlotImage("slot-" + slotKey, iconPath, "../assets/img/slots/" + slotKey + ".png");
+    equippedItems[slotKey] = item;
 
-        case "Head":
-            setSlotImage("slot-head", iconPath, "../assets/img/slots/head.png");
-            equippedItems.Head = item;
-            break;
-
-        case "Chest":
-            setSlotImage("slot-chest", iconPath, "../assets/img/slots/chest.png");
-            equippedItems.Chest = item;
-            break;
-
-        case "Pants":
-            setSlotImage("slot-pants", iconPath, "../assets/img/slots/pants.png");
-            equippedItems.pants = item;
-            break;
-
-        case "Boots":
-            setSlotImage("slot-boots", iconPath, "../assets/img/slots/boots.png");
-            equippedItems.boots = item;
-            break;
-
-        case "Weapon":
-            setSlotImage("slot-weapon", iconPath, "../assets/img/slots/weapon.png");
-            equippedItems.weapon = item;
-            break;
-
-        default:
-            // Aucun item -> laisse l'image par défaut
-            break;
+    const mobileLabel = document.getElementById("mobile-slot-" + slotKey);
+    if (mobileLabel) {
+        mobileLabel.innerHTML = "";
+        if (item && item.name) {
+            const mobileLink = createItemWikiLink(item.name);
+            mobileLink.addEventListener("click", (event) => {
+                event.stopPropagation();
+            });
+            mobileLabel.appendChild(mobileLink);
+        } else {
+            mobileLabel.textContent = "None";
+        }
     }
 }
 
@@ -115,29 +143,24 @@ function setSlotImage(id, pathItem, pathDefault) {
     }
 }
 
+function bindSlotInteractions() {
+    const allSlotButtons = document.querySelectorAll("[data-slot]");
+    allSlotButtons.forEach((slotButton) => {
+        slotButton.addEventListener("click", () => {
+            const slotKey = slotButton.getAttribute("data-slot");
+            if (!slotKey) {
+                return;
+            }
 
+            allSlotButtons.forEach((button) => {
+                const sameSlot = button.getAttribute("data-slot") === slotKey;
+                button.classList.toggle("active", sameSlot);
+            });
 
-// ==========================
-//   UPDATE IMAGE DU SLOT
-// ==========================
-function setSlotImage(id, path) {
-    const img = document.getElementById(id);
-    if (!img) {
-        console.warn("Slot introuvable : " + id);
-        return;
-    }
-    img.src = path;
-
-    img.onerror = () => {
-        img.src = "../assets/img/placeholder.png"; // fallback
-    };
+            showItemInfo(equippedItems[slotKey]);
+        });
+    });
 }
-
-document.getElementById("slot-head").addEventListener("click", () => showItemInfo(equippedItems.helmet));
-document.getElementById("slot-chest").addEventListener("click", () => showItemInfo(equippedItems.Chest));
-document.getElementById("slot-legs").addEventListener("click", () => showItemInfo(equippedItems.Legs));
-document.getElementById("slot-boots").addEventListener("click", () => showItemInfo(equippedItems.boots));
-document.getElementById("slot-weapon").addEventListener("click", () => showItemInfo(equippedItems.weapon));
 
 
 
@@ -154,7 +177,9 @@ function showItemInfo(item) {
         return;
     }
 
-    document.getElementById("info-name").textContent = "Name : " + item.name;
+    const infoName = document.getElementById("info-name");
+    infoName.textContent = "Name : ";
+    infoName.appendChild(createItemWikiLink(item.name));
     document.getElementById("info-rarity").textContent = "Rarity : " + item.rarity;
     document.getElementById("info-level").textContent = "Level : " + item.lvl;
     document.getElementById("info-desc").textContent =
@@ -162,7 +187,15 @@ function showItemInfo(item) {
 }
 
 const searchInput = document.getElementById("searchInput");
+const searchButton = document.getElementById("searchButton");
 const searchResults = document.getElementById("searchResults");
+const menuToggleButton = document.getElementById("menuToggleButton");
+const profileMenuDropdown = document.getElementById("profileMenuDropdown");
+const goHomeButton = document.getElementById("goHomeButton");
+const goProfileButton = document.getElementById("goProfileButton");
+const goSettingsButton = document.getElementById("goSettingsButton");
+const goWikiButton = document.getElementById("goWikiButton");
+const goLoginButton = document.getElementById("goLoginButton");
 
 searchInput.addEventListener("input", async () => {
     const query = searchInput.value.trim();
@@ -186,7 +219,7 @@ searchInput.addEventListener("input", async () => {
                 div.className = "resultItem";
                 div.textContent = user.username;
                 div.addEventListener("click", () => {
-                    window.location.href = `/pages/profil.html?user=${encodeURIComponent(user.username)}`;
+                    window.location.href = `/pages/profilViewer.html?user=${encodeURIComponent(user.username)}`;
                 });
                 searchResults.appendChild(div);
             });
@@ -206,7 +239,70 @@ document.addEventListener("click", (e) => {
     }
 });
 
-document.getElementById("buttonHome").addEventListener("click", () => {
-    window.location.href = "/pages/home.html"; 
-});
+if (searchButton) {
+    searchButton.addEventListener("click", () => {
+        const query = searchInput.value.trim();
+        if (query) {
+            window.location.href = `/pages/profilViewer.html?user=${encodeURIComponent(query)}`;
+        }
+    });
+}
+
+function setupTopMenuDropdown() {
+    if (!menuToggleButton || !profileMenuDropdown) {
+        return;
+    }
+
+    const setOpen = (isOpen) => {
+        profileMenuDropdown.classList.toggle("show", isOpen);
+        profileMenuDropdown.style.display = isOpen ? "block" : "none";
+        menuToggleButton.setAttribute("aria-expanded", String(isOpen));
+    };
+
+    setOpen(false);
+
+    menuToggleButton.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        setOpen(!profileMenuDropdown.classList.contains("show"));
+    });
+
+    document.addEventListener("click", (event) => {
+        if (!profileMenuDropdown.contains(event.target) && !menuToggleButton.contains(event.target)) {
+            setOpen(false);
+        }
+    });
+
+    if (goHomeButton) {
+        goHomeButton.addEventListener("click", () => {
+            window.location.href = "/pages/home.html";
+        });
+    }
+
+    if (goProfileButton) {
+        goProfileButton.addEventListener("click", () => {
+            window.location.href = "/pages/profil.html";
+        });
+    }
+
+    if (goSettingsButton) {
+        goSettingsButton.addEventListener("click", () => {
+            window.location.href = "/pages/settings.html";
+        });
+    }
+
+    if (goWikiButton) {
+        goWikiButton.addEventListener("click", () => {
+            window.location.href = "/pages/wiki.html";
+        });
+    }
+
+    if (goLoginButton) {
+        goLoginButton.addEventListener("click", () => {
+            window.location.href = "/pages/login.html";
+        });
+    }
+}
+
+setupTopMenuDropdown();
 getPlayerData();
