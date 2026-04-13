@@ -1,7 +1,7 @@
 <?php
 header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Headers: Content-Type, X-Sync-Token, X-Client-Type");
-header("Access-Control-Allow-Methods: POST, OPTIONS");
+header("Access-Control-Allow-Methods: POST, OPTIONS");  
 header("Content-Type: application/json");
 
 if (($_SERVER["REQUEST_METHOD"] ?? "") === "OPTIONS") {
@@ -11,6 +11,7 @@ if (($_SERVER["REQUEST_METHOD"] ?? "") === "OPTIONS") {
 
 require "db.php";
 require_once __DIR__ . '/vendor/autoload.php';
+require_once __DIR__ . '/SyncWikiHelper.php';
 
 use App\Log;
 
@@ -25,39 +26,6 @@ function jsonFail(int $code, string $status, string $message = ""): void
     }
     echo json_encode($payload);
     exit;
-}
-
-function getIdBySlug(mysqli $conn, string $table, string $slug): ?int
-{
-    $stmt = $conn->prepare("SELECT id FROM {$table} WHERE slug = ? LIMIT 1");
-    $stmt->bind_param("s", $slug);
-    $stmt->execute();
-    $row = $stmt->get_result()->fetch_assoc();
-    return $row ? (int)$row["id"] : null;
-}
-
-function upsertBySlug(mysqli $conn, string $table, array $row): int
-{
-    $slug = trim((string)($row["slug"] ?? ""));
-    $name = trim((string)($row["name"] ?? ""));
-    $description = (string)($row["description"] ?? "");
-
-    if ($slug === "" || $name === "") {
-        throw new Exception("Missing slug/name for table {$table}");
-    }
-
-    $id = getIdBySlug($conn, $table, $slug);
-    if ($id !== null) {
-        $stmt = $conn->prepare("UPDATE {$table} SET name = ?, description = ? WHERE id = ?");
-        $stmt->bind_param("ssi", $name, $description, $id);
-        $stmt->execute();
-        return $id;
-    }
-
-    $stmt = $conn->prepare("INSERT INTO {$table} (slug, name, description) VALUES (?, ?, ?)");
-    $stmt->bind_param("sss", $slug, $name, $description);
-    $stmt->execute();
-    return (int)$conn->insert_id;
 }
 
 $expectedToken = getenv("WIKI_SYNC_SECRET") ?: "";
@@ -77,9 +45,12 @@ $summary = [
     "biome_categories" => 0,
     "monster_categories" => 0,
     "item_categories" => 0,
+    "items_game" => 0,
+    "items" => 0,
     "biomes" => 0,
     "monsters" => 0,
     "spawns" => 0,
+    "spawns_auto" => 0,
     "loots" => 0,
     "item_category_links" => 0,
     "deleted" => 0
@@ -87,6 +58,10 @@ $summary = [
 
 try {
     $conn->begin_transaction();
+
+    $biomeCategoriesById = [];
+    $monsterCategoriesById = [];
+    $processedBiomeIds = [];
 
     foreach (($data["biome_categories"] ?? []) as $category) {
         upsertBySlug($conn, "wiki_biome_categories", $category);
@@ -101,6 +76,13 @@ try {
     foreach (($data["item_categories"] ?? []) as $category) {
         upsertBySlug($conn, "wiki_item_categories", $category);
         $summary["item_categories"]++;
+    }
+
+    foreach (($data['items'] ?? []) as $item) {
+        upsertGameItem($conn, $item);
+        $summary['items_game']++;
+        upsertWikiItem($conn, $item);
+        $summary['items']++;
     }
 
     foreach (($data["biomes"] ?? []) as $biome) {
@@ -140,7 +122,13 @@ try {
                 $ins->bind_param("ii", $biomeId, $catId);
                 $ins->execute();
             }
+
+            $biomeCategoriesById[$biomeId] = normalizeSlugList($biome["categories"]);
+        } else {
+            $biomeCategoriesById[$biomeId] = [];
         }
+
+        $processedBiomeIds[] = $biomeId;
 
         $summary["biomes"]++;
     }
@@ -183,12 +171,53 @@ try {
                 $ins->bind_param("ii", $monsterId, $catId);
                 $ins->execute();
             }
+
+            $monsterCategoriesById[$monsterId] = normalizeSlugList($monster["categories"]);
+        } else {
+            $monsterCategoriesById[$monsterId] = [];
         }
 
         $summary["monsters"]++;
     }
 
-    foreach (($data["spawns"] ?? []) as $spawn) {
+    $explicitSpawns = $data["spawns"] ?? [];
+    $useCategorySpawnSync = (bool)($data["spawn_from_category_slugs"] ?? (is_array($explicitSpawns) && count($explicitSpawns) === 0));
+
+    if ($useCategorySpawnSync) {
+        foreach ($processedBiomeIds as $biomeId) {
+            $del = $conn->prepare("DELETE FROM wiki_monster_spawns WHERE biome_id = ?");
+            $del->bind_param("i", $biomeId);
+            $del->execute();
+        }
+
+        foreach ($biomeCategoriesById as $biomeId => $biomeCatSlugs) {
+            if (!$biomeCatSlugs) {
+                continue;
+            }
+
+            foreach ($monsterCategoriesById as $monsterId => $monsterCatSlugs) {
+                if (!$monsterCatSlugs) {
+                    continue;
+                }
+
+                $shared = array_values(array_intersect($biomeCatSlugs, $monsterCatSlugs));
+                if (!$shared) {
+                    continue;
+                }
+
+                $notes = "auto:category_match:" . implode(',', $shared);
+                $spawnRate = null;
+                $stmt = $conn->prepare("INSERT INTO wiki_monster_spawns (monster_id, biome_id, spawn_rate, notes) VALUES (?, ?, ?, ?) ON DUPLICATE KEY UPDATE spawn_rate = VALUES(spawn_rate), notes = VALUES(notes)");
+                $stmt->bind_param("iids", $monsterId, $biomeId, $spawnRate, $notes);
+                $stmt->execute();
+
+                $summary["spawns"]++;
+                $summary["spawns_auto"]++;
+            }
+        }
+    }
+
+    foreach ($explicitSpawns as $spawn) {
         $monsterId = getIdBySlug($conn, "wiki_monsters", (string)($spawn["monster_slug"] ?? ""));
         $biomeId = getIdBySlug($conn, "wiki_biomes", (string)($spawn["biome_slug"] ?? ""));
         if ($monsterId === null || $biomeId === null) {
@@ -207,9 +236,16 @@ try {
     foreach (($data["loots"] ?? []) as $loot) {
         $monsterId = getIdBySlug($conn, "wiki_monsters", (string)($loot["monster_slug"] ?? ""));
         $itemId = (int)($loot["item_id"] ?? 0);
-        if ($monsterId === null || $itemId <= 0) {
+        if ($monsterId === null || $itemId < 0) {
             continue;
         }
+
+        upsertWikiItem($conn, [
+            'item_id' => $itemId,
+            'name' => (string)($loot['item_name'] ?? ''),
+            'slug' => (string)($loot['item_slug'] ?? ''),
+            'description' => (string)($loot['item_description'] ?? '')
+        ]);
 
         $biomeSlug = (string)($loot["biome_slug"] ?? "");
         $biomeId = $biomeSlug !== "" ? getIdBySlug($conn, "wiki_biomes", $biomeSlug) : null;
@@ -241,9 +277,15 @@ try {
 
     foreach (($data["item_category_links"] ?? []) as $link) {
         $itemId = (int)($link["item_id"] ?? 0);
-        if ($itemId <= 0) {
+        if ($itemId < 0) {
             continue;
         }
+
+        upsertWikiItem($conn, [
+            'item_id' => $itemId,
+            'name' => (string)($link['item_name'] ?? ''),
+            'slug' => (string)($link['item_slug'] ?? '')
+        ]);
 
         $slugs = [];
         if (isset($link["category_slug"])) {

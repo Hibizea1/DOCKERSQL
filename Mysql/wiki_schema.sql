@@ -152,6 +152,81 @@ CREATE TABLE IF NOT EXISTS wiki_monsters (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS wiki_items (
+    item_id INT NOT NULL PRIMARY KEY,
+    slug VARCHAR(140) NOT NULL UNIQUE,
+    name VARCHAR(180) NOT NULL,
+    description VARCHAR(400) DEFAULT NULL,
+    type VARCHAR(120) DEFAULT NULL,
+    weaponType VARCHAR(120) DEFAULT NULL,
+    price INT DEFAULT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    INDEX idx_wiki_items_name (name),
+    INDEX idx_wiki_items_slug (slug)
+);
+
+SET
+    @has_imagePath := (
+        SELECT COUNT(*)
+        FROM INFORMATION_SCHEMA.COLUMNS
+        WHERE
+            TABLE_SCHEMA = DATABASE()
+            AND TABLE_NAME = 'wiki_items'
+            AND COLUMN_NAME = 'imagePath'
+    );
+
+SET
+    @drop_imagePath_sql := IF(
+        @has_imagePath > 0,
+        'ALTER TABLE wiki_items DROP COLUMN imagePath',
+        'SELECT 1'
+    );
+
+PREPARE stmt_drop_imagePath FROM @drop_imagePath_sql;
+
+EXECUTE stmt_drop_imagePath;
+
+DEALLOCATE PREPARE stmt_drop_imagePath;
+
+SET
+    @has_meshPath := (
+        SELECT COUNT(*)
+        FROM INFORMATION_SCHEMA.COLUMNS
+        WHERE
+            TABLE_SCHEMA = DATABASE()
+            AND TABLE_NAME = 'wiki_items'
+            AND COLUMN_NAME = 'meshPath'
+    );
+
+SET
+    @drop_meshPath_sql := IF(
+        @has_meshPath > 0,
+        'ALTER TABLE wiki_items DROP COLUMN meshPath',
+        'SELECT 1'
+    );
+
+PREPARE stmt_drop_meshPath FROM @drop_meshPath_sql;
+
+EXECUTE stmt_drop_meshPath;
+
+DEALLOCATE PREPARE stmt_drop_meshPath;
+
+INSERT IGNORE INTO
+    wiki_items (
+        item_id,
+        slug,
+        name,
+        description,
+        type,
+        weaponType,
+        price
+    )
+SELECT i.Item_ID, LOWER(
+        REPLACE (TRIM(i.name), ' ', '-')
+    ), i.name, NULL, i.type, i.weaponType, i.Price
+FROM items i;
+
 CREATE TABLE IF NOT EXISTS wiki_monster_spawns (
     monster_id INT NOT NULL,
     biome_id INT NOT NULL,
@@ -484,29 +559,30 @@ FROM
             AND b.slug = 'obsidian-wastes'
         )
     )
-    JOIN items i ON (
+    JOIN wiki_items i ON (
         (
             m.slug = 'slime-scout'
-            AND i.Item_ID % 4 = 0
+            AND i.item_id % 4 = 0
         )
         OR (
             m.slug = 'cave-raider'
-            AND i.Item_ID % 4 = 1
+            AND i.item_id % 4 = 1
         )
         OR (
             m.slug = 'frost-stalker'
-            AND i.Item_ID % 4 = 2
+            AND i.item_id % 4 = 2
         )
         OR (
             m.slug = 'obsidian-titan'
-            AND i.Item_ID % 4 = 3
+            AND i.item_id % 4 = 3
         )
     );
 
 INSERT IGNORE INTO
     wiki_item_category_map (item_id, category_id)
-SELECT i.Item_ID, c.id
-FROM items i
+SELECT i.item_id, c.id
+FROM
+    wiki_items i
     JOIN wiki_item_categories c ON (
         (
             i.type LIKE '%Weapon%'

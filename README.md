@@ -29,13 +29,32 @@ docker compose up -d --build
 
 Le port HTTP `8080` redirige vers HTTPS `8443`.
 
-## Wiki Sync (Unreal Editor)
+## Unified Game + Wiki Sync (Unreal Editor)
+
+Le script unique `web/php/sync_wiki_game_data.php` est prevu pour etre appele depuis Unreal Editor et remplace aussi `update_items.php`.
+
+Les deux endpoints suivants executent maintenant le meme moteur:
+
+- `POST https://localhost:8443/php/sync_wiki_game_data.php`
+- `POST https://localhost:8443/php/update_items.php`
+
+Le payload peut synchroniser en une seule requete:
+
+- table `items` (jeu)
+- table `wiki_items` (wiki)
+- categories wiki
+- biomes
+- monstres
+- spawns
+- loots
+- liens item <-> categories
 
 Le script `web/php/sync_wiki_game_data.php` est prevu pour etre appele depuis des commandes Unreal Editor afin de synchroniser:
 
 - categories de biomes
 - categories de monstres
 - categories d'items
+- items (jeu + wiki)
 - biomes
 - monstres
 - spawns
@@ -114,6 +133,28 @@ Le script `web/php/sync_wiki_game_data.php` est prevu pour etre appele depuis de
   "deletes": {
     "biomes": [],
     "monsters": []
+  }
+}
+```
+
+### JSON de sortie (exemple)
+
+```json
+{
+  "status": "success",
+  "summary": {
+    "biome_categories": 5,
+    "monster_categories": 2,
+    "item_categories": 1,
+    "items_game": 6,
+    "items": 6,
+    "biomes": 2,
+    "monsters": 1,
+    "spawns": 2,
+    "spawns_auto": 2,
+    "loots": 3,
+    "item_category_links": 6,
+    "deleted": 0
   }
 }
 ```

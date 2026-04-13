@@ -14,6 +14,7 @@ let currentCategory = "";
 let currentSearch = "";
 let currentMode = "pages";
 let liveSearchTimer = null;
+let currentSlugFilter = "";
 
 function escapeHtml(value) {
     return String(value)
@@ -22,6 +23,25 @@ function escapeHtml(value) {
         .replace(/>/g, "&gt;")
         .replace(/\"/g, "&quot;")
         .replace(/'/g, "&#39;");
+}
+
+function toPascalCase(value) {
+    const input = String(value || "").trim();
+    if (!input) {
+        return "";
+    }
+
+    const normalized = input
+        .replace(/[_-]+/g, " ")
+        .replace(/([a-z0-9])([A-Z])/g, "$1 $2")
+        .replace(/\s+/g, " ")
+        .trim();
+
+    return normalized
+        .split(" ")
+        .filter(Boolean)
+        .map((part) => part.charAt(0).toUpperCase() + part.slice(1).toLowerCase())
+        .join(" ");
 }
 
 function categoriesToArray(categories) {
@@ -59,16 +79,50 @@ function splitCsv(value) {
         .filter((v) => v.length > 0);
 }
 
+function slugifyName(value) {
+    return String(value || "")
+        .toLowerCase()
+        .trim()
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+}
+
+function parseRefToken(token) {
+    const raw = String(token || "").trim();
+    if (!raw) {
+        return null;
+    }
+
+    const idx = raw.indexOf("::");
+    if (idx === -1) {
+        return {
+            slug: slugifyName(raw),
+            label: toPascalCase(raw)
+        };
+    }
+
+    const slug = raw.slice(0, idx).trim();
+    const label = raw.slice(idx + 2).trim();
+    return {
+        slug: slug || slugifyName(label),
+        label: toPascalCase(label || slug)
+    };
+}
+
 function renderClickableCsv(value, target) {
-    const items = splitCsv(value);
+    const items = splitCsv(value)
+        .map(parseRefToken)
+        .filter(Boolean);
+
     if (!items.length) {
         return "None";
     }
 
     return items
-        .map((name) => {
-            const encoded = encodeURIComponent(name);
-            return `<a href="#" class="wiki-inline-link" data-wiki-target="${target}" data-wiki-name="${encoded}">${escapeHtml(name)}</a>`;
+        .map((entry) => {
+            const encodedSlug = encodeURIComponent(entry.slug || "");
+            const encodedLabel = encodeURIComponent(entry.label || "");
+            return `<a href="#" class="wiki-inline-link" data-wiki-target="${target}" data-wiki-slug="${encodedSlug}" data-wiki-label="${encodedLabel}">${escapeHtml(entry.label || entry.slug)}</a>`;
         })
         .join(", ");
 }
@@ -131,6 +185,7 @@ function addDedicatedDataCategories() {
         btn.addEventListener("click", async () => {
             cancelPendingLiveSearch();
             currentSearch = wikiSearchInput.value.trim();
+            currentSlugFilter = "";
             currentCategory = "";
             currentMode = entry.key;
             setActiveCategoryButton(entry.key);
@@ -161,6 +216,7 @@ async function loadCategories() {
     allBtn.addEventListener("click", () => {
         cancelPendingLiveSearch();
         currentSearch = wikiSearchInput.value.trim();
+        currentSlugFilter = "";
         currentCategory = "";
         currentMode = "pages";
         setActiveCategoryButton("page:all");
@@ -180,6 +236,7 @@ async function loadCategories() {
         btn.addEventListener("click", () => {
             cancelPendingLiveSearch();
             currentSearch = wikiSearchInput.value.trim();
+            currentSlugFilter = "";
             currentCategory = category.slug;
             currentMode = "pages";
             setActiveCategoryButton(`page:${category.slug}`);
@@ -264,7 +321,7 @@ function renderEntityCatalog(entries, options) {
         row.innerHTML = `
             <button class="wiki-item-head" type="button">
                 <img src="${escapeHtml(options.iconPath)}" alt="${escapeHtml(title)}">
-                <span class="wiki-item-title">${escapeHtml(title)}</span>
+                <span class="wiki-item-title">${escapeHtml(toPascalCase(title))}</span>
                 <span class="wiki-item-toggle">▶</span>
             </button>
             <div class="wiki-item-detail">
@@ -284,8 +341,9 @@ function renderEntityCatalog(entries, options) {
 
 async function loadBiomesCatalog() {
     const params = new URLSearchParams();
-    if (currentSearch) {
-        params.set("q", currentSearch);
+    const query = currentSlugFilter || currentSearch;
+    if (query) {
+        params.set("q", query);
     }
 
     const data = await fetchJson(`/php/wiki_biomes.php?${params.toString()}`);
@@ -295,7 +353,7 @@ async function loadBiomesCatalog() {
         detailHtmlFor: (biome) => `
             <p>${escapeHtml(`Description: ${biome.description || "No description"}`)}</p>
             <p>${escapeHtml(`Level: ${biome.level_min}-${biome.level_max}`)}</p>
-            <p>Spawned monsters: ${renderClickableCsv(biome.spawn_monsters, "monster")}</p>
+            <p>Spawned monsters: ${renderClickableCsv(biome.spawn_monster_refs || biome.spawn_monster_refs_by_category || biome.spawn_monster_refs_by_loot || biome.spawn_monsters || biome.spawn_monsters_by_category || biome.spawn_monsters_by_loot, "monster")}</p>
             <p>${escapeHtml(`Loot entries: ${biome.loot_entries}`)}</p>
         `,
         categoriesFor: (biome) => biome.categories
@@ -304,8 +362,9 @@ async function loadBiomesCatalog() {
 
 async function loadMonstersCatalog() {
     const params = new URLSearchParams();
-    if (currentSearch) {
-        params.set("q", currentSearch);
+    const query = currentSlugFilter || currentSearch;
+    if (query) {
+        params.set("q", query);
     }
 
     const data = await fetchJson(`/php/wiki_monsters.php?${params.toString()}`);
@@ -316,21 +375,21 @@ async function loadMonstersCatalog() {
             <p>${escapeHtml(`Description: ${monster.description || "No description"}`)}</p>
             <p>${escapeHtml(`Difficulty: ${monster.difficulty}`)}</p>
             <p>${escapeHtml(`Level: ${monster.level_min}-${monster.level_max}`)}</p>
-            <p>${escapeHtml(`Spawn biomes: ${monster.spawn_biomes || "Unknown"}`)}</p>
-            <p>Loot items: ${renderClickableCsv(monster.loot_items, "item")}</p>
+            <p>Spawn biomes: ${renderClickableCsv(monster.spawn_biome_refs || monster.spawn_biome_refs_by_category || monster.spawn_biome_refs_by_loot || monster.spawn_biomes || monster.spawn_biomes_by_category || monster.spawn_biomes_by_loot, "biome")}</p>
+            <p>Loot items: ${renderClickableCsv(monster.loot_item_refs || monster.loot_items, "item")}</p>
         `,
         categoriesFor: (monster) => monster.categories
     });
 }
 
-function buildItemDetail(item) {
-    return [
-        `Type: ${item.type || "Unknown"}`,
-        `Weapon type: ${item.weaponType || "None"}`,
-        `Price: ${item.Price ?? "Unknown"}`,
-        `Dropped by: ${item.dropped_by || "Unknown"}`,
-        `Biomes: ${item.biomes || "Unknown"}`
-    ];
+function buildItemDetailHtml(item) {
+    const droppedBy = renderClickableCsv(item.dropped_by_refs || item.dropped_by, "monster");
+    return `
+        <p>${escapeHtml(`Type: ${item.type || "Unknown"}`)}</p>
+        <p>${escapeHtml(`Weapon type: ${item.weaponType || "None"}`)}</p>
+        <p>${escapeHtml(`Price: ${item.price ?? item.Price ?? "Unknown"}`)}</p>
+        <p>Dropped by: ${droppedBy}</p>
+    `;
 }
 
 function renderItemCatalog(items) {
@@ -346,14 +405,12 @@ function renderItemCatalog(items) {
         row.className = "wiki-item-row";
 
         const imagePath = `../assets/img/items/${item.name}.png`;
-        const details = buildItemDetail(item)
-            .map((line) => `<p>${escapeHtml(line)}</p>`)
-            .join("");
+        const details = buildItemDetailHtml(item);
 
         row.innerHTML = `
             <button class="wiki-item-head" type="button">
                 <img src="${escapeHtml(imagePath)}" alt="${escapeHtml(item.name)}" onerror="this.onerror=null;this.src='../assets/img/slots/weapon.png';">
-                <span class="wiki-item-title">${escapeHtml(item.name)}</span>
+                <span class="wiki-item-title">${escapeHtml(toPascalCase(item.name))}</span>
                 <span class="wiki-item-toggle">▶</span>
             </button>
             <div class="wiki-item-detail">
@@ -373,8 +430,9 @@ function renderItemCatalog(items) {
 
 async function loadItemsCatalog() {
     const params = new URLSearchParams();
-    if (currentSearch) {
-        params.set("q", currentSearch);
+    const query = currentSlugFilter || currentSearch;
+    if (query) {
+        params.set("q", query);
     }
 
     const data = await fetchJson(`/php/wiki_item_sources.php?${params.toString()}`);
@@ -383,6 +441,7 @@ async function loadItemsCatalog() {
 
 function runCurrentSearch() {
     currentSearch = wikiSearchInput.value.trim();
+    currentSlugFilter = "";
 
     if (currentMode === "data:items") {
         loadItemsCatalog();
@@ -405,16 +464,42 @@ function runCurrentSearch() {
 async function applyInitialRouteFromUrl() {
     const params = new URLSearchParams(window.location.search);
     const item = (params.get("item") || "").trim();
+    const slug = (params.get("slug") || "").trim();
     const view = (params.get("view") || "").trim().toLowerCase();
 
     if (view === "item") {
         currentMode = "data:items";
         currentCategory = "";
-        currentSearch = item;
+        currentSlugFilter = slug;
+        currentSearch = item || slug;
         wikiSearchInput.value = currentSearch;
         setActiveCategoryButton("data:items");
         showCatalogMode("Items Loot Sources");
         await loadItemsCatalog();
+        return true;
+    }
+
+    if (view === "monster") {
+        currentMode = "data:monsters";
+        currentCategory = "";
+        currentSlugFilter = slug;
+        currentSearch = item || slug;
+        wikiSearchInput.value = currentSearch;
+        setActiveCategoryButton("data:monsters");
+        showCatalogMode("Monsters and Loot");
+        await loadMonstersCatalog();
+        return true;
+    }
+
+    if (view === "biome") {
+        currentMode = "data:biomes";
+        currentCategory = "";
+        currentSlugFilter = slug;
+        currentSearch = item || slug;
+        wikiSearchInput.value = currentSearch;
+        setActiveCategoryButton("data:biomes");
+        showCatalogMode("Biomes and Spawn");
+        await loadBiomesCatalog();
         return true;
     }
 
@@ -450,30 +535,66 @@ wikiItemsList.addEventListener("click", (event) => {
     event.stopPropagation();
 
     const target = link.dataset.wikiTarget || "";
-    const name = decodeURIComponent(link.dataset.wikiName || "").trim();
-    if (!name) {
+    const slug = decodeURIComponent(link.dataset.wikiSlug || "").trim();
+    const label = decodeURIComponent(link.dataset.wikiLabel || "").trim();
+    if (!slug && !label) {
         return;
     }
+
+    const nextSearch = label || slug;
+    const nextSlug = slug || slugifyName(label);
 
     if (target === "monster") {
         currentMode = "data:monsters";
         currentCategory = "";
-        currentSearch = name;
-        wikiSearchInput.value = name;
+        currentSlugFilter = nextSlug;
+        currentSearch = nextSearch;
+        wikiSearchInput.value = nextSearch;
         setActiveCategoryButton("data:monsters");
         showCatalogMode("Monsters and Loot");
         loadMonstersCatalog();
+
+        const url = new URL(window.location.href);
+        url.searchParams.set("view", "monster");
+        url.searchParams.set("slug", nextSlug);
+        url.searchParams.set("item", nextSearch);
+        window.history.replaceState({}, "", url.toString());
+        return;
+    }
+
+    if (target === "biome") {
+        currentMode = "data:biomes";
+        currentCategory = "";
+        currentSlugFilter = nextSlug;
+        currentSearch = nextSearch;
+        wikiSearchInput.value = nextSearch;
+        setActiveCategoryButton("data:biomes");
+        showCatalogMode("Biomes and Spawn");
+        loadBiomesCatalog();
+
+        const url = new URL(window.location.href);
+        url.searchParams.set("view", "biome");
+        url.searchParams.set("slug", nextSlug);
+        url.searchParams.set("item", nextSearch);
+        window.history.replaceState({}, "", url.toString());
         return;
     }
 
     if (target === "item") {
         currentMode = "data:items";
         currentCategory = "";
-        currentSearch = name;
-        wikiSearchInput.value = name;
+        currentSlugFilter = nextSlug;
+        currentSearch = nextSearch;
+        wikiSearchInput.value = nextSearch;
         setActiveCategoryButton("data:items");
         showCatalogMode("Items Loot Sources");
         loadItemsCatalog();
+
+        const url = new URL(window.location.href);
+        url.searchParams.set("view", "item");
+        url.searchParams.set("slug", nextSlug);
+        url.searchParams.set("item", nextSearch);
+        window.history.replaceState({}, "", url.toString());
     }
 });
 

@@ -81,11 +81,12 @@ $where = "";
 $params = [];
 $types = '';
 if ($q !== '') {
-    $where = "WHERE (m.name LIKE ? OR m.description LIKE ?)";
+    $where = "WHERE (m.name LIKE ? OR m.description LIKE ? OR m.slug LIKE ?)";
     $like = "%{$q}%";
     $params[] = $like;
     $params[] = $like;
-    $types = 'ss';
+    $params[] = $like;
+    $types = 'sss';
 }
 
 $listSql = "
@@ -99,7 +100,39 @@ $listSql = "
         m.difficulty,
         GROUP_CONCAT(DISTINCT mc.name ORDER BY mc.name SEPARATOR ', ') AS categories,
         GROUP_CONCAT(DISTINCT b.name ORDER BY b.name SEPARATOR ', ') AS spawn_biomes,
+        GROUP_CONCAT(DISTINCT CONCAT(b.slug, '::', b.name) ORDER BY b.name SEPARATOR ', ') AS spawn_biome_refs,
+        (
+            SELECT GROUP_CONCAT(DISTINCT b2.name ORDER BY b2.name SEPARATOR ', ')
+            FROM wiki_monster_category_map mcm2
+            JOIN wiki_monster_categories mc2 ON mc2.id = mcm2.category_id
+            JOIN wiki_biome_categories bc2 ON bc2.slug = mc2.slug
+            JOIN wiki_biome_category_map bcm2 ON bcm2.category_id = bc2.id
+            JOIN wiki_biomes b2 ON b2.id = bcm2.biome_id
+            WHERE mcm2.monster_id = m.id
+        ) AS spawn_biomes_by_category,
+        (
+            SELECT GROUP_CONCAT(DISTINCT CONCAT(b2.slug, '::', b2.name) ORDER BY b2.name SEPARATOR ', ')
+            FROM wiki_monster_category_map mcm2
+            JOIN wiki_monster_categories mc2 ON mc2.id = mcm2.category_id
+            JOIN wiki_biome_categories bc2 ON bc2.slug = mc2.slug
+            JOIN wiki_biome_category_map bcm2 ON bcm2.category_id = bc2.id
+            JOIN wiki_biomes b2 ON b2.id = bcm2.biome_id
+            WHERE mcm2.monster_id = m.id
+        ) AS spawn_biome_refs_by_category,
+        (
+            SELECT GROUP_CONCAT(DISTINCT b3.name ORDER BY b3.name SEPARATOR ', ')
+            FROM wiki_monster_loot l3
+            JOIN wiki_biomes b3 ON b3.id = l3.biome_id
+            WHERE l3.monster_id = m.id AND l3.biome_id IS NOT NULL
+        ) AS spawn_biomes_by_loot,
+        (
+            SELECT GROUP_CONCAT(DISTINCT CONCAT(b3.slug, '::', b3.name) ORDER BY b3.name SEPARATOR ', ')
+            FROM wiki_monster_loot l3
+            JOIN wiki_biomes b3 ON b3.id = l3.biome_id
+            WHERE l3.monster_id = m.id AND l3.biome_id IS NOT NULL
+        ) AS spawn_biome_refs_by_loot,
         GROUP_CONCAT(DISTINCT li.name ORDER BY li.name SEPARATOR ', ') AS loot_items,
+        GROUP_CONCAT(DISTINCT CONCAT(LOWER(REPLACE(TRIM(li.name), ' ', '-')), '::', li.name) ORDER BY li.name SEPARATOR ', ') AS loot_item_refs,
         COUNT(DISTINCT l.id) AS loot_entries
     FROM wiki_monsters m
     LEFT JOIN wiki_monster_category_map mcm ON mcm.monster_id = m.id
