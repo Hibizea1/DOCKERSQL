@@ -1,4 +1,6 @@
-﻿@font-face {
+﻿@import url("https://fonts.googleapis.com/css2?family=Audiowide&display=swap");
+
+@font-face {
     font-family: "Audiowide";
     src: url("../fonts/Audiowide-Regular.ttf") format("truetype");
     font-style: normal;
@@ -28,6 +30,18 @@ body {
     
 }
 
+html,
+body {
+    font-family: var(--theme-font);
+}
+
+button,
+input,
+select,
+textarea {
+    font: inherit;
+}
+
 body {
     background-color: var(--theme-bg-main);
     background-image:
@@ -41,7 +55,7 @@ body {
 
 
 body > *{
-    margin-bottom: 50px;
+    margin-bottom: 0;
 }
 
 /* Layout */
@@ -196,6 +210,8 @@ span#level{
     outline: none;
     margin-right: 10px;
     margin-left: 10px;
+    font-family: var(--theme-font);
+    font-weight: 400;
 }
 
 /* Placeholder discret */
@@ -239,12 +255,15 @@ span#level{
 }
 
 .buttonHome {
-    width: 40px;
-    height: 40px;
+    width: auto;
+    min-width: 80px;
+    height: 34px;
+    padding: 0 16px;
     background: var(--theme-line);
     border: 2px solid var(--theme-line);
     border-radius: 0;
-    box-shadow: 0 0 8px #000;
+    clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%, 0 0);
+    box-shadow: 0 0 0 1px rgba(114, 12, 88, 0.45), 0 0 8px rgba(0, 0, 0, 0.35);
     display: flex;
     color: var(--theme-text);
     justify-content: center;
@@ -252,6 +271,8 @@ span#level{
     cursor: pointer;
     transition: 0.2s;
     margin-right: 10px;
+    font-family: var(--theme-font);
+    font-weight: 400;
 }
 
 .buttonHome:hover {
@@ -265,12 +286,15 @@ span#level{
 }
 
 .searchButton {
-    width: 40px;
-    height: 40px;
+    width: auto;
+    min-width: 108px;
+    height: 34px;
+    padding: 0 16px;
     background: var(--theme-line);
     border: 2px solid var(--theme-line);
     border-radius: 0;
-    box-shadow: 0 0 8px #000;
+    clip-path: polygon(0 0, calc(100% - 12px) 0, 100% 12px, 100% 100%, 0 100%, 0 0);
+    box-shadow: 0 0 0 1px rgba(114, 12, 88, 0.45), 0 0 8px rgba(0, 0, 0, 0.35);
     display: flex;
     color: var(--theme-text);
     justify-content: center;
@@ -278,6 +302,8 @@ span#level{
     cursor: pointer;
     transition: 0.2s;
     margin-right: 10px;
+    font-family: var(--theme-font);
+    font-weight: 400;
 }
 
 .searchButton:hover {
@@ -332,7 +358,7 @@ span#level{
 .menu-dropdown .buttonHome {
     width: auto;
     min-width: 78px;
-    padding: 0 14px;
+    padding: 0 16px;
 }
 
 .dropdown-content button:hover {
@@ -360,8 +386,9 @@ span#level{
     min-height: 280px;
     width: 100%;
     background-image:
-        linear-gradient(120deg, rgba(8, 10, 13, 0.82), rgba(36, 58, 78, 0.55)),
-        url("../img/Items/obsidianBow.png");
+        radial-gradient(circle at 20% 20%, rgba(113, 144, 185, 0.16), transparent 38%),
+        radial-gradient(circle at 80% 75%, rgba(113, 144, 185, 0.12), transparent 42%),
+        linear-gradient(120deg, rgba(8, 10, 13, 0.82), rgba(36, 58, 78, 0.55));
     background-repeat: no-repeat;
     background-position: center, center;
     background-size: cover;
@@ -497,6 +524,7 @@ span#level{
     background: var(--theme-panel-dark);
     color: var(--theme-text);
     cursor: pointer;
+    font-family: var(--theme-font);
 }
 
 .scroll-btn:hover {
@@ -684,7 +712,7 @@ span#level{
     
 }
 
-/* ===== merged profile overrides ===== */
+/* ===== profile styles ===== */
 
 @font-face {
     font-family: "Audiowide";
@@ -1178,259 +1206,109 @@ body.profile-page {
     }
 }
 
-
-
-/* ===== merged wiki styles ===== */
-
-.wiki-app {
-    display: grid;
-    grid-template-columns: 280px 1fr;
-    gap: 18px;
-}
-
-.wiki-sidebar,
-.wiki-content {
-    border: 3px solid #ff2abf;
-    border-radius: 0;
-    background: #04253a;
-    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.28);
-    padding: 14px;
-}
-
-.wiki-sidebar h2 {
-    margin: 0 0 10px;
-    color: #ff2abf;
-}
-
-.wiki-category-list {
+/* ===== login styles (scoped) ===== */
+body.login-page {
     display: flex;
-    flex-direction: column;
-    gap: 8px;
-}
-
-.wiki-category-subtitle {
-    margin: 10px 0 2px;
-    color: #9ff4ff;
-    font-size: 12px;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-}
-
-.wiki-category-item-data {
-    border-style: dashed;
-}
-
-.wiki-category-item {
-    border: 2px solid #ff2abf;
-    background: #57c9db;
-    border-radius: 0;
-    color: #1d4d72;
-    padding: 10px;
-    cursor: pointer;
-    text-align: left;
-}
-
-.wiki-category-item:hover,
-.wiki-category-item.active {
-    border-color: #ff8de2;
-    box-shadow: 0 0 12px rgba(255, 42, 191, 0.45);
-}
-
-.wiki-toolbar {
-    display: flex;
-    gap: 8px;
-    margin-bottom: 12px;
-}
-
-.wiki-items-catalog h2 {
-    margin: 0 0 10px;
-    color: #ff2abf;
-}
-
-.wiki-items-list {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-}
-
-.wiki-item-row {
-    border: 2px solid #ff2abf;
-    border-radius: 0;
-    background: #2c7ea2;
-    overflow: hidden;
-}
-
-.wiki-item-head {
-    width: 100%;
-    border: none;
-    background: transparent;
-    color: #d2fdff;
-    display: grid;
-    grid-template-columns: 56px 1fr auto;
-    gap: 10px;
+    justify-content: center;
     align-items: center;
+    min-height: 100vh;
+}
+
+.login-page .login-box {
+    width: 300px;
+    padding: 30px;
+    background: #04253a;
+    box-shadow: 0 14px 28px rgba(0, 0, 0, 0.38);
+    border-radius: 0;
+    border: 3px solid #ff2abf;
+    clip-path: polygon(0 0, calc(100% - 18px) 0, 100% 18px, 100% 100%, 18px 100%, 0 calc(100% - 18px));
+}
+
+.login-page .login-box h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #ff2abf;
+    font-weight: bold;
+}
+
+.login-page .login-box input {
+    width: 100%;
     padding: 10px;
-    cursor: pointer;
-    text-align: left;
-}
-
-.wiki-item-head:hover {
-    background: #3397b8;
-}
-
-.wiki-item-head img {
-    width: 52px;
-    height: 52px;
-    object-fit: cover;
-    border-radius: 0;
-    border: 2px solid #ff2abf;
-    background: #57c9db;
-}
-
-.wiki-item-title {
-    font-size: 16px;
-    font-weight: 600;
-}
-
-.wiki-item-toggle {
-    color: #9ff4ff;
-    font-size: 18px;
-}
-
-.wiki-item-detail {
-    display: none;
-    border-top: 1px solid rgba(255, 42, 191, 0.5);
-    background: #0f5178;
-    padding: 12px;
-}
-
-.wiki-item-row.open .wiki-item-detail {
-    display: block;
-}
-
-.wiki-item-row.open .wiki-item-toggle {
-    transform: rotate(90deg);
-}
-
-.wiki-item-detail p {
-    margin: 4px 0;
-    color: #d2fdff;
-    line-height: 1.4;
-}
-
-.wiki-inline-link {
-    color: #9ff4ff;
-    text-decoration: underline;
-    text-underline-offset: 2px;
-    font-weight: 600;
-}
-
-.wiki-inline-link:hover {
-    color: #ffffff;
-}
-
-#wikiSearch {
-    flex: 1;
-    border-radius: 0;
-    border: 2px solid #ff2abf;
+    margin-bottom: 15px;
+    box-sizing: border-box;
     background: rgba(8, 51, 77, 0.72);
     color: #9ff4ff;
-    padding: 9px 11px;
-}
-
-.wiki-cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-    gap: 10px;
-    margin-bottom: 14px;
-}
-
-.wiki-card {
     border: 2px solid #ff2abf;
     border-radius: 0;
-    background: #2c7ea2;
-    padding: 10px;
-    cursor: pointer;
-}
-
-.wiki-card:hover {
-    border-color: #ff8de2;
-    transform: translateY(-1px);
-}
-
-.wiki-card h3 {
-    margin: 0 0 6px;
-    color: #9ff4ff;
-    font-size: 16px;
-}
-
-.wiki-card-categories {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin: 0 0 8px;
-}
-
-.wiki-chip {
-    border: 1px solid #ff2abf;
-    border-radius: 999px;
-    background: rgba(255, 42, 191, 0.2);
-    color: #d2fdff;
-    font-size: 11px;
-    padding: 2px 8px;
-    line-height: 1.4;
-    letter-spacing: 0.02em;
-}
-
-.wiki-card p {
-    margin: 0;
-    color: #d2fdff;
     font-size: 14px;
-    line-height: 1.45;
 }
 
-.wiki-article {
-    border: 3px solid #ff2abf;
+.login-page .login-box button {
+    width: 100%;
+    padding: 12px;
+    background-color: #ff2abf;
+    border: 2px solid #ff2abf;
     border-radius: 0;
-    background: #57c9db;
-    padding: 14px;
+    color: #9ff4ff;
+    font-weight: bold;
+    font-size: 15px;
+    cursor: pointer;
+    transition: 0.2s;
 }
 
-.wiki-article h2 {
-    margin: 0;
-    color: #ff2abf;
+.login-page .login-box button:hover {
+    border-color: #ff9ce6;
+    box-shadow: 0 0 12px rgba(255, 42, 191, 0.55);
 }
 
-.wiki-meta {
-    color: #1d4d72;
-    margin: 6px 0 10px;
+.login-page .login-box p,
+.login-page .login-box a {
+    color: #9ff4ff;
+    text-align: center;
+    margin-top: 10px;
+    font-size: 13px;
+    text-decoration: none;
 }
 
-.wiki-body {
-    margin: 0;
-    color: #1d4d72;
-    white-space: pre-wrap;
-    line-height: 1.55;
-    font-family: Consolas, 'Courier New', monospace;
+.login-page .login-box a:hover {
+    text-decoration: underline;
 }
 
-.wiki-relations {
-    margin-top: 14px;
-}
-
-.wiki-relations h2 {
-    margin: 12px 0 8px;
-    color: #ff2abf;
-    font-size: 20px;
-}
-
-.wiki-relations .wiki-card p {
+.login-page .login-box label {
+    color: #d6fbff;
     font-size: 13px;
 }
 
-@media (max-width: 900px) {
-    .wiki-app {
-        grid-template-columns: 1fr;
-    }
+/* ===== enforced global theme for non-profile pages ===== */
+body.home-page,
+body.login-page {
+    font-family: "Audiowide", "Bahnschrift", "Segoe UI", sans-serif !important;
+    background-color: #1f252e !important;
+    color: #9ff4ff !important;
 }
+
+body.home-page .buttonHome,
+body.home-page .searchButton {
+    background: #ff2abf !important;
+    border: 2px solid #ff2abf !important;
+    color: #9ff4ff !important;
+}
+
+body.home-page .container,
+body.home-page .game-card,
+body.home-page .hero-title-block {
+    background: #04253a !important;
+    border-color: #ff2abf !important;
+}
+
+body.home-page #inventories th {
+    background: #57c9db !important;
+    color: #1d4d72 !important;
+}
+
+body.home-page #inventories td {
+    background: #2c7ea2 !important;
+    color: #d2fdff !important;
+}
+
 

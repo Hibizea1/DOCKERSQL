@@ -6,16 +6,16 @@
 
 .wiki-sidebar,
 .wiki-content {
-    border: 1px solid #455161;
-    border-radius: 12px;
-    background: linear-gradient(170deg, #252d39, #1b222c);
+    border: 3px solid #ff2abf;
+    border-radius: 0;
+    background: #04253a;
     box-shadow: 0 10px 20px rgba(0, 0, 0, 0.28);
     padding: 14px;
 }
 
 .wiki-sidebar h2 {
     margin: 0 0 10px;
-    color: #d7ebff;
+    color: #ff2abf;
 }
 
 .wiki-category-list {
@@ -26,7 +26,7 @@
 
 .wiki-category-subtitle {
     margin: 10px 0 2px;
-    color: #9eb7d1;
+    color: #9ff4ff;
     font-size: 12px;
     text-transform: uppercase;
     letter-spacing: 0.08em;
@@ -37,10 +37,10 @@
 }
 
 .wiki-category-item {
-    border: 1px solid #4f6177;
-    background: #202936;
-    border-radius: 10px;
-    color: #d7ebff;
+    border: 2px solid #ff2abf;
+    background: #57c9db;
+    border-radius: 0;
+    color: #1d4d72;
     padding: 10px;
     cursor: pointer;
     text-align: left;
@@ -48,8 +48,8 @@
 
 .wiki-category-item:hover,
 .wiki-category-item.active {
-    border-color: #8dc5f8;
-    box-shadow: 0 0 10px rgba(128, 191, 245, 0.45);
+    border-color: #ff8de2;
+    box-shadow: 0 0 12px rgba(255, 42, 191, 0.45);
 }
 
 .wiki-toolbar {
@@ -60,7 +60,7 @@
 
 .wiki-items-catalog h2 {
     margin: 0 0 10px;
-    color: #d7ebff;
+    color: #ff2abf;
 }
 
 .wiki-items-list {
@@ -70,9 +70,9 @@
 }
 
 .wiki-item-row {
-    border: 1px solid #4b5b71;
-    border-radius: 10px;
-    background: #1b2532;
+    border: 2px solid #ff2abf;
+    border-radius: 0;
+    background: #2c7ea2;
     overflow: hidden;
 }
 
@@ -80,7 +80,7 @@
     width: 100%;
     border: none;
     background: transparent;
-    color: #e4f1ff;
+    color: #d2fdff;
     display: grid;
     grid-template-columns: 56px 1fr auto;
     gap: 10px;
@@ -91,16 +91,16 @@
 }
 
 .wiki-item-head:hover {
-    background: #223246;
+    background: #3397b8;
 }
 
 .wiki-item-head img {
     width: 52px;
     height: 52px;
     object-fit: cover;
-    border-radius: 8px;
-    border: 1px solid #60758f;
-    background: #121921;
+    border-radius: 0;
+    border: 2px solid #ff2abf;
+    background: #57c9db;
 }
 
 .wiki-item-title {
@@ -109,14 +109,14 @@
 }
 
 .wiki-item-toggle {
-    color: #9ecbf5;
+    color: #9ff4ff;
     font-size: 18px;
 }
 
 .wiki-item-detail {
     display: none;
-    border-top: 1px solid #3f5167;
-    background: #16202b;
+    border-top: 1px solid rgba(255, 42, 191, 0.5);
+    background: #0f5178;
     padding: 12px;
 }
 
@@ -130,12 +130,12 @@
 
 .wiki-item-detail p {
     margin: 4px 0;
-    color: #cde0f3;
+    color: #d2fdff;
     line-height: 1.4;
 }
 
 .wiki-inline-link {
-    color: #b8deff;
+    color: #9ff4ff;
     text-decoration: underline;
     text-underline-offset: 2px;
     font-weight: 600;
@@ -147,10 +147,10 @@
 
 #wikiSearch {
     flex: 1;
-    border-radius: 8px;
-    border: 1px solid #4a5a70;
-    background: #18212d;
-    color: #eef7ff;
+    border-radius: 0;
+    border: 2px solid #ff2abf;
+    background: rgba(8, 51, 77, 0.72);
+    color: #9ff4ff;
     padding: 9px 11px;
 }
 
@@ -162,21 +162,21 @@
 }
 
 .wiki-card {
-    border: 1px solid #4b5b71;
-    border-radius: 10px;
-    background: #1b2532;
+    border: 2px solid #ff2abf;
+    border-radius: 0;
+    background: #2c7ea2;
     padding: 10px;
     cursor: pointer;
 }
 
 .wiki-card:hover {
-    border-color: #94c9f8;
+    border-color: #ff8de2;
     transform: translateY(-1px);
 }
 
 .wiki-card h3 {
     margin: 0 0 6px;
-    color: #d8ebff;
+    color: #9ff4ff;
     font-size: 16px;
 }
 
@@ -188,10 +188,10 @@
 }
 
 .wiki-chip {
-    border: 1px solid #6d88a6;
+    border: 1px solid #ff2abf;
     border-radius: 999px;
-    background: rgba(76, 105, 138, 0.28);
-    color: #dff0ff;
+    background: rgba(255, 42, 191, 0.2);
+    color: #d2fdff;
     font-size: 11px;
     padding: 2px 8px;
     line-height: 1.4;
@@ -200,31 +200,31 @@
 
 .wiki-card p {
     margin: 0;
-    color: #c2d4e8;
+    color: #d2fdff;
     font-size: 14px;
     line-height: 1.45;
 }
 
 .wiki-article {
-    border: 1px solid #4f6075;
-    border-radius: 10px;
-    background: #18212c;
+    border: 3px solid #ff2abf;
+    border-radius: 0;
+    background: #57c9db;
     padding: 14px;
 }
 
 .wiki-article h2 {
     margin: 0;
-    color: #f0f8ff;
+    color: #ff2abf;
 }
 
 .wiki-meta {
-    color: #afc6de;
+    color: #1d4d72;
     margin: 6px 0 10px;
 }
 
 .wiki-body {
     margin: 0;
-    color: #d9e6f4;
+    color: #1d4d72;
     white-space: pre-wrap;
     line-height: 1.55;
     font-family: Consolas, 'Courier New', monospace;
@@ -236,7 +236,7 @@
 
 .wiki-relations h2 {
     margin: 12px 0 8px;
-    color: #d7ebff;
+    color: #ff2abf;
     font-size: 20px;
 }
 

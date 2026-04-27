@@ -145,6 +145,8 @@ try {
             throw new Exception("Monster requires slug and name");
         }
 
+        upsertMonster($conn, $monster);
+
         $monsterId = getIdBySlug($conn, "wiki_monsters", $slug);
         if ($monsterId !== null) {
             $stmt = $conn->prepare("UPDATE wiki_monsters SET name=?, description=?, level_min=?, level_max=?, difficulty=? WHERE id=?");

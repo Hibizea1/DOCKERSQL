@@ -1,65 +1,115 @@
 {
     "items": {
-        "EWeaponType::Bow": [
+        "Bow": [
             {
                 "id": "95",
                 "name": "crystalBow",
-                "type": "EEquipmentType::Weapon",
-                "rarity": "0",
+                "type": "Weapon",
+                "rarity": "Common",
                 "Item_ID": "0",
                 "Price": "1",
                 "mesh_path": "\/Game\/Weapon\/Mesh\/Falconer_s_White_Bow.Falconer_s_White_Bow",
-                "weaponType": "EWeaponType::Bow",
+                "weaponType": "Bow",
                 "imagePath": "\/Game\/IconCreator\/T_Bow1.T_Bow1",
                 "damageMultiplier": "18"
             },
             {
                 "id": "96",
                 "name": "falconBow",
-                "type": "EEquipmentType::Weapon",
-                "rarity": "0",
+                "type": "Weapon",
+                "rarity": "Common",
                 "Item_ID": "2",
                 "Price": "1",
                 "mesh_path": "\/Game\/Weapon\/Mesh\/Mechanical_Bow.Mechanical_Bow",
-                "weaponType": "EWeaponType::Bow",
+                "weaponType": "Bow",
                 "imagePath": "\/Game\/IconCreator\/T_Bow3.T_Bow3",
                 "damageMultiplier": "22"
             },
             {
                 "id": "97",
                 "name": "frostBow",
-                "type": "EEquipmentType::Weapon",
-                "rarity": "0",
+                "type": "Weapon",
+                "rarity": "Common",
                 "Item_ID": "3",
                 "Price": "1",
                 "mesh_path": "\/Game\/Weapon\/Mesh\/Frost_Bow_Ignavus.Frost_Bow_Ignavus",
-                "weaponType": "EWeaponType::Bow",
+                "weaponType": "Bow",
                 "imagePath": "\/Game\/IconCreator\/T_Bow4.T_Bow4",
                 "damageMultiplier": "20"
             },
             {
                 "id": "98",
                 "name": "mechanicalBow",
-                "type": "EEquipmentType::Weapon",
-                "rarity": "0",
+                "type": "Weapon",
+                "rarity": "Common",
                 "Item_ID": "4",
                 "Price": "1",
                 "mesh_path": "\/Game\/Weapon\/Mesh\/Obsidian_Dragon_Bow_X.Obsidian_Dragon_Bow_X",
-                "weaponType": "EWeaponType::Bow",
+                "weaponType": "Bow",
                 "imagePath": "\/Game\/IconCreator\/T_Bow5.T_Bow5",
                 "damageMultiplier": "20"
             },
             {
                 "id": "99",
                 "name": "obsidianBow",
-                "type": "EEquipmentType::Weapon",
-                "rarity": "0",
+                "type": "Weapon",
+                "rarity": "Common",
                 "Item_ID": "5",
                 "Price": "1",
                 "mesh_path": "\/Game\/Weapon\/Mesh\/Great_Crystal_Bow.Great_Crystal_Bow",
-                "weaponType": "EWeaponType::Bow",
+                "weaponType": "Bow",
                 "imagePath": "\/Game\/IconCreator\/T_Bow2.T_Bow2",
                 "damageMultiplier": "25"
+            },
+            {
+                "id": "103",
+                "name": "helperBow",
+                "type": "Weapon",
+                "rarity": "Common",
+                "Item_ID": "1101",
+                "Price": "1",
+                "mesh_path": "\/Game\/Mesh\/SM_Bow.SM_Bow",
+                "weaponType": "Bow",
+                "imagePath": "\/Game\/Icon\/T_Bow.T_Bow",
+                "damageMultiplier": "1"
+            }
+        ],
+        "EWeaponType::Bow": [
+            {
+                "id": "100",
+                "name": "testBow",
+                "type": "EEquipmentType::Weapon",
+                "rarity": "Common",
+                "Item_ID": "999",
+                "Price": "1",
+                "mesh_path": "",
+                "weaponType": "EWeaponType::Bow",
+                "imagePath": "",
+                "damageMultiplier": "1"
+            },
+            {
+                "id": "101",
+                "name": "mergeBow",
+                "type": "EEquipmentType::Weapon",
+                "rarity": "Common",
+                "Item_ID": "1001",
+                "Price": "1",
+                "mesh_path": "",
+                "weaponType": "EWeaponType::Bow",
+                "imagePath": "",
+                "damageMultiplier": "1"
+            },
+            {
+                "id": "102",
+                "name": "pathBow",
+                "type": "EEquipmentType::Weapon",
+                "rarity": "Common",
+                "Item_ID": "1002",
+                "Price": "1",
+                "mesh_path": "\/Game\/Meshes\/SM_Bow.SM_Bow",
+                "weaponType": "EWeaponType::Bow",
+                "imagePath": "\/Game\/IconCreator\/T_Bow1.T_Bow1",
+                "damageMultiplier": "1"
             }
         ]
     }

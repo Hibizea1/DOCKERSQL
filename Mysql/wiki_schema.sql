@@ -1,5 +1,106 @@
 -- Wiki V1 schema for DOCKERSQL
 
+CREATE TABLE IF NOT EXISTS users (
+    id INT NOT NULL AUTO_INCREMENT,
+    username VARCHAR(50) NOT NULL,
+    email VARCHAR(100) NOT NULL,
+    password VARCHAR(255) NOT NULL,
+    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    refresh_token VARCHAR(255) DEFAULT NULL,
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_users_username (username),
+    UNIQUE KEY uq_users_email (email)
+);
+
+CREATE TABLE IF NOT EXISTS items (
+    id INT NOT NULL AUTO_INCREMENT,
+    name VARCHAR(100) DEFAULT NULL,
+    type VARCHAR(50) DEFAULT NULL,
+    rarity VARCHAR(50) DEFAULT NULL,
+    Item_ID INT DEFAULT NULL,
+    Price INT DEFAULT NULL,
+    mesh_path VARCHAR(100) DEFAULT NULL,
+    weaponType VARCHAR(50) DEFAULT NULL,
+    imagePath VARCHAR(60) DEFAULT NULL,
+    damageMultiplier INT DEFAULT 1,
+    PRIMARY KEY (id),
+    UNIQUE KEY uq_items_item_id (Item_ID),
+    UNIQUE KEY uq_items_name (name)
+);
+
+CREATE TABLE IF NOT EXISTS characters (
+    id INT NOT NULL AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    level INT DEFAULT 1,
+    xp INT DEFAULT 0,
+    gold INT DEFAULT 0,
+    class VARCHAR(50) DEFAULT NULL,
+    stamina INT DEFAULT 0,
+    intelligence INT DEFAULT 0,
+    strenght INT DEFAULT 0,
+    health INT DEFAULT 0,
+    mana INT DEFAULT 0,
+    PRIMARY KEY (id),
+    KEY idx_characters_user_id (user_id),
+    CONSTRAINT fk_characters_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS instance_items (
+    id INT NOT NULL AUTO_INCREMENT,
+    item_id INT DEFAULT NULL,
+    rarity INT DEFAULT NULL,
+    lvl INT DEFAULT NULL,
+    PRIMARY KEY (id),
+    KEY idx_instance_items_item_id (item_id),
+    CONSTRAINT fk_instance_items_item FOREIGN KEY (item_id) REFERENCES items (Item_ID) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS inventories (
+    id INT NOT NULL AUTO_INCREMENT,
+    character_id INT NOT NULL,
+    item_id INT NOT NULL,
+    quantity INT DEFAULT 1,
+    PRIMARY KEY (id),
+    KEY idx_inventories_character_id (character_id),
+    KEY idx_inventories_item_id (item_id),
+    CONSTRAINT fk_inventories_character FOREIGN KEY (character_id) REFERENCES characters (id) ON DELETE CASCADE,
+    CONSTRAINT fk_inventories_item FOREIGN KEY (item_id) REFERENCES instance_items (id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS equipment (
+    id INT NOT NULL AUTO_INCREMENT,
+    characters_id INT NOT NULL,
+    item_id INT NOT NULL,
+    quantity INT DEFAULT NULL,
+    PRIMARY KEY (id),
+    KEY idx_equipment_characters_id (characters_id),
+    KEY idx_equipment_item_id (item_id),
+    CONSTRAINT fk_equipment_character FOREIGN KEY (characters_id) REFERENCES characters (id),
+    CONSTRAINT fk_equipment_item FOREIGN KEY (item_id) REFERENCES instance_items (id) ON DELETE RESTRICT ON UPDATE RESTRICT
+);
+
+CREATE TABLE IF NOT EXISTS Param (
+    id INT NOT NULL AUTO_INCREMENT,
+    user_id INT NOT NULL,
+    darkMode TINYINT(1) DEFAULT 0,
+    inventorypreview TINYINT(1) DEFAULT 0,
+    PRIMARY KEY (id),
+    KEY idx_param_user_id (user_id),
+    CONSTRAINT fk_param_user FOREIGN KEY (user_id) REFERENCES users (id) ON DELETE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS monsters_stats (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    slug VARCHAR(80) NOT NULL UNIQUE,
+    drop_xp INT NOT NULL,
+    drop_gold INT NOT NULL,
+    stamina INT NOT NULL,
+    health INT NOT NULL,
+    strength INT NOT NULL,
+    mana INT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE IF NOT EXISTS wiki_categories (
     id INT AUTO_INCREMENT PRIMARY KEY,
     slug VARCHAR(80) NOT NULL UNIQUE,

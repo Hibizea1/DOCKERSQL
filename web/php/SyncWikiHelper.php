@@ -130,6 +130,66 @@ function upsertWikiItem(mysqli $conn, array $item): int
     return $itemId;
 }
 
+function resolveMonsterStatsTable(mysqli $conn): string
+{
+    static $resolved = null;
+    if ($resolved !== null) {
+        return $resolved;
+    }
+
+    foreach (['monsters_stats', 'monster_stats'] as $table) {
+        $stmt = $conn->prepare('SELECT 1 FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = ? LIMIT 1');
+        $stmt->bind_param('s', $table);
+        $stmt->execute();
+        if ($stmt->get_result()->fetch_row() !== null) {
+            $resolved = $table;
+            return $resolved;
+        }
+    }
+
+    throw new Exception('Neither monster_stats nor monsters_stats table exists');
+}
+
+function upsertMonster(mysqli $conn, array $monster): void
+{
+    $slug = trim((string)($monster['slug'] ?? ''));
+    if ($slug === '') {
+        throw new Exception('Monster stats require slug');
+    }
+
+    $dropXpRaw = $monster['drop_xp'] ?? null;
+    $dropGoldRaw = $monster['drop_gold'] ?? null;
+    $staminaRaw = $monster['stamina'] ?? null;
+    $healthRaw = $monster['health'] ?? null;
+    $strengthRaw = $monster['strength'] ?? null;
+    $manaRaw = $monster['mana'] ?? null;
+
+    if ($dropXpRaw === null || $dropGoldRaw === null || $staminaRaw === null || $healthRaw === null || $strengthRaw === null || $manaRaw === null) {
+        throw new Exception('Monster stats must be provided by Unreal (drop_xp, drop_gold, stamina, health, strength, mana) for slug ' . $slug);
+    }
+
+    $dropXp = (int)$dropXpRaw;
+    $dropGold = (int)$dropGoldRaw;
+    $stamina = (int)$staminaRaw;
+    $health = (int)$healthRaw;
+    $strength = (int)$strengthRaw;
+    $mana = (int)$manaRaw;
+
+    $statsTable = resolveMonsterStatsTable($conn);
+    $id = getIdBySlug($conn, $statsTable, $slug);
+
+    if ($id !== null) {
+        $stmt = $conn->prepare("UPDATE {$statsTable} SET drop_xp = ?, drop_gold = ?, stamina = ?, health = ?, strength = ?, mana = ? WHERE id = ?");
+        $stmt->bind_param('iiiiiii', $dropXp, $dropGold, $stamina, $health, $strength, $mana, $id);
+        $stmt->execute();
+        return;
+    }
+
+    $stmt = $conn->prepare("INSERT INTO {$statsTable} (slug, drop_xp, drop_gold, stamina, health, strength, mana) VALUES (?, ?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param('siiiiii', $slug, $dropXp, $dropGold, $stamina, $health, $strength, $mana);
+    $stmt->execute();
+}
+
 function upsertGameItem(mysqli $conn, array $item): int
 {
     $itemId = (int)($item['item_id'] ?? $item['id'] ?? 0);
