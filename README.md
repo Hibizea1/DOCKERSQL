@@ -1,199 +1,82 @@
-# CDA-API
+# DOCKERSQL — Installation et exécution
 
-## HTTPS (site + backend)
+Ce dépôt contient une stack Docker pour servir une application PHP/Apache + MySQL, phpMyAdmin et MailHog. Le service `php` expose le frontend sur `/public` et les endpoints backend sur `/php`.
 
-La stack est configuree pour servir le site et le backend en HTTPS dans le service `php`.
+**Accès principaux**
 
-- Site: `https://localhost:8443/`
-- Backend: `https://localhost:8443/php/...`
+- **Site (HTTPS)**: `https://localhost:8443/`
+- **Site (HTTP)**: `http://localhost:8080/` (redirection vers HTTPS)
+- **phpMyAdmin**: `http://localhost:8899/` (user: `root`, password: `root`)
+- **MailHog UI**: `http://localhost:8025/`
 
-Pour supprimer l'alerte navigateur, utilisez un certificat local de confiance avec `mkcert`.
+**Ports exposés (par défaut)**
+
+- Apache: `8080` -> 80, `8443` -> 443
+- MySQL: `3307` -> 3306
+- phpMyAdmin: `8899` -> 80
+- MailHog: `1025`, `8025`
+
+**Prérequis**
+
+- Docker Engine (Windows: Docker Desktop) installé et démarré
+- Docker Compose v2 (inclus avec Docker Desktop)
+- (Optionnel) `mkcert` pour un certificat local sans warnings
+
+**Préparer un certificat local (optionnel mais recommandé)**
 
 1. Installer `mkcert` (Windows):
    - `winget install FiloSottile.mkcert`
-2. Generer le certificat local (installe aussi l'autorite locale dans le store de confiance):
+2. Générer le certificat et la clé (le projet propose un script PowerShell):
    - `powershell -ExecutionPolicy Bypass -File .\scripts\generate-local-cert.ps1`
-3. Redemarrer la stack:
-   - `docker compose up -d --build`
+3. Les fichiers générés doivent être présents dans `certs/server.crt` et `certs/server.key`.
 
-Le certificat sera lu depuis:
+Si vous ne fournissez pas de certificats, Apache démarrera quand même (mais le navigateur affichera un avertissement).
 
-- `certs/server.crt`
-- `certs/server.key`
-
-Pour appliquer la configuration:
+**Installation & lancement (build + run)**
+Depuis la racine du projet, exécutez:
 
 ```bash
 docker compose up -d --build
 ```
 
-Le port HTTP `8080` redirige vers HTTPS `8443`.
+Le service `php` est construit depuis le `Dockerfile` du projet. L'image contient un petit `entrypoint` qui vérifie la présence d'un `composer.json` dans `web/php` et lance `composer install` si `vendor/` est manquant.
 
-## Unified Game + Wiki Sync (Unreal Editor)
+**Notes sur `composer` et volumes (Windows)**
 
-Le script unique `web/php/sync_wiki_game_data.php` est prevu pour etre appele depuis Unreal Editor et remplace aussi `update_items.php`.
+- Le répertoire `web/php` est monté en volume dans le conteneur. Si `composer install` échoue à l'intérieur du conteneur à cause des permissions sur Windows, vous pouvez exécuter `composer install` localement sur votre machine dans `web/php` (ou ajuster les permissions sur le dossier monté).
 
-Les deux endpoints suivants executent maintenant le meme moteur:
+Exemples de commandes utiles:
 
-- `POST https://localhost:8443/php/sync_wiki_game_data.php`
-- `POST https://localhost:8443/php/update_items.php`
+```bash
+# Rebuild et relancer
+docker compose up -d --build
 
-Le payload peut synchroniser en une seule requete:
+# Voir les logs du service PHP
+docker compose logs -f php
 
-- table `items` (jeu)
-- table `wiki_items` (wiki)
-- categories wiki
-- biomes
-- monstres
-- spawns
-- loots
-- liens item <-> categories
+# Exécuter une commande bash dans le conteneur PHP
+docker compose exec php bash
 
-Le script `web/php/sync_wiki_game_data.php` est prevu pour etre appele depuis des commandes Unreal Editor afin de synchroniser:
-
-- categories de biomes
-- categories de monstres
-- categories d'items
-- items (jeu + wiki)
-- biomes
-- monstres
-- spawns
-- loots
-- liens item <-> categories
-
-### Endpoint
-
-- `POST https://localhost:8443/php/sync_wiki_game_data.php`
-
-### Headers
-
-- `Content-Type: application/json`
-- `X-Client-Type: game`
-- `X-Sync-Token: <secret>` (optionnel, obligatoire si `WIKI_SYNC_SECRET` est configure)
-
-### Payload minimal (exemple)
-
-```json
-{
-  "biome_categories": [
-    { "slug": "starter", "name": "Starter", "description": "Beginner biomes" }
-  ],
-  "monster_categories": [
-    { "slug": "elite", "name": "Elite", "description": "High threat monsters" }
-  ],
-  "item_categories": [
-    { "slug": "weapon", "name": "Weapon", "description": "Offensive equipment" }
-  ],
-  "biomes": [
-    {
-      "slug": "green-plains",
-      "name": "Green Plains",
-      "description": "Low-risk zone",
-      "level_min": 1,
-      "level_max": 12,
-      "categories": ["starter"]
-    }
-  ],
-  "monsters": [
-    {
-      "slug": "slime-scout",
-      "name": "Slime Scout",
-      "description": "Small scouting slime",
-      "level_min": 1,
-      "level_max": 8,
-      "difficulty": "easy",
-      "categories": ["elite"]
-    }
-  ],
-  "spawns": [
-    {
-      "monster_slug": "slime-scout",
-      "biome_slug": "green-plains",
-      "spawn_rate": 48.0,
-      "notes": "Main beginner spawn"
-    }
-  ],
-  "loots": [
-    {
-      "monster_slug": "slime-scout",
-      "item_id": 0,
-      "biome_slug": "green-plains",
-      "drop_rate": 30.0,
-      "min_qty": 1,
-      "max_qty": 1,
-      "notes": "Starter drop"
-    }
-  ],
-  "item_category_links": [
-    {
-      "item_id": 0,
-      "category_slugs": ["weapon"]
-    }
-  ],
-  "deletes": {
-    "biomes": [],
-    "monsters": []
-  }
-}
+# Lancer composer manuellement (si besoin)
+cd web/php && composer install --no-dev --optimize-autoloader
 ```
 
-### JSON de sortie (exemple)
+**Variables d'environnement importantes**
 
-```json
-{
-  "status": "success",
-  "summary": {
-    "biome_categories": 5,
-    "monster_categories": 2,
-    "item_categories": 1,
-    "items_game": 6,
-    "items": 6,
-    "biomes": 2,
-    "monsters": 1,
-    "spawns": 2,
-    "spawns_auto": 2,
-    "loots": 3,
-    "item_category_links": 6,
-    "deleted": 0
-  }
-}
-```
+- Mail: `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_ENCRYPTION`, `MAIL_FROM_EMAIL`, `MAIL_FROM_NAME` (définies dans `docker-compose.yml` ou via `.env` si vous en ajoutez un)
+- Base de données: `MYSQL_ROOT_PASSWORD`, `MYSQL_DATABASE` (définies pour le service `db`)
 
-# File Tree: DOCKERSQL
+**Endpoints utiles (synchronisation jeu/wiki)**
 
-**Generated:** 2/2/2026, 1:53:25 PM
-**Root Path:** `j:\DOCKERSQL`
+- `POST https://localhost:8443/php/sync_wiki_game_data.php` — endpoint principal pour synchroniser données jeu/wiki.
+- Headers recommandés: `Content-Type: application/json`, `X-Client-Type: game`, `X-Sync-Token: <secret>` (si `WIKI_SYNC_SECRET` est configuré).
 
-```
-├── 📁 .dist
-├── 📁 Mysql
-├── 📁 config
-│   └── 🐘 jwt.php
-├── 📁 php
-│   ├── 📁 src
-│   ├── 🐘 Helper.php
-│   ├── ⚙️ composer.json
-│   ├── 🐘 connect.php
-│   ├── 🐘 create_account.php
-│   ├── 🐘 db.php
-│   ├── 🐘 get_item_csv.php
-│   ├── 🐘 get_score.php
-│   ├── 🐘 index.php
-│   ├── 📄 items.csv
-│   ├── 🐘 load_inventories.php
-│   ├── 🐘 login_account.php
-│   ├── 🐘 refresh.php
-│   ├── 🐘 save_inventories.php
-│   ├── 🐘 save_score.php
-│   ├── 🐘 update_character.php
-│   └── 🐘 update_items.php
-├── ⚙️ .gitattributes
-├── ⚙️ .gitignore
-├── 🐳 Dockerfile
-├── 📝 README.md
-└── ⚙️ docker-compose.yml
-```
+**Dépannage rapide**
 
----
+- Si Apache ne démarre pas: vérifiez `docker compose logs php` pour les erreurs de configuration Apache (chemins de certificats, modules activés).
+- Si MySQL ne démarre pas: supprimez les containers et reconstruisez, ou vérifiez les permissions du dossier `mysql-data`.
+- Pour éviter que les mounts Windows bloquent l'installation composer, installez les dépendances sur l'hôte puis relancez le conteneur.
 
-_Generated by FileTree Pro Extension_
+**Prochaine étape suggérée**
+
+- Voulez-vous que je lance la construction et le test de l'image Docker depuis cet environnement (nécessite Docker local) ? Sinon je peux ajouter des vérifications supplémentaires dans l'entrypoint (ex: gestion fine des permissions Windows).
