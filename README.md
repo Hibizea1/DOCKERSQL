@@ -6,7 +6,7 @@ Ce dépôt contient une stack Docker pour servir une application PHP/Apache + My
 
 - **Site (HTTPS)**: `https://localhost:8443/`
 - **Site (HTTP)**: `http://localhost:8080/` (redirection vers HTTPS)
-- **phpMyAdmin**: `http://localhost:8899/` (user: `root`, password: `root`)
+- **phpMyAdmin**: `http://localhost:8899/` (création des identifiants décrite ci-dessous)
 - **MailHog UI**: `http://localhost:8025/`
 
 **Ports exposés (par défaut)**
@@ -31,6 +31,33 @@ Ce dépôt contient une stack Docker pour servir une application PHP/Apache + My
 3. Les fichiers générés doivent être présents dans `certs/server.crt` et `certs/server.key`.
 
 Si vous ne fournissez pas de certificats, Apache démarrera quand même (mais le navigateur affichera un avertissement).
+
+**Gestion des mots de passe et secrets**
+
+Les mots de passe ne sont pas fournis dans ce dépôt. Vous devez créer vos propres secrets avant de démarrer la stack. Deux méthodes conseillées :
+
+- Créer un fichier `.env` à la racine du projet (non commité) contenant les variables listées ci-dessous.
+- Ou définir les variables d'environnement sur votre machine / dans votre orchestrateur avant d'exécuter `docker compose up`.
+
+Exemple minimal de fichier `.env` (à adapter) :
+
+```env
+# Base de données
+MYSQL_ROOT_PASSWORD=change_me_secure
+MYSQL_DATABASE=unreal_game
+
+# phpMyAdmin
+PMA_USER=admin
+PMA_PASSWORD=change_me_secure
+
+# Mail (exemple)
+MAIL_HOST=smtp.example.com
+MAIL_PORT=587
+MAIL_USERNAME=no-reply@example.com
+MAIL_PASSWORD=change_me_secure
+```
+
+Ne commitez jamais `.env` dans le dépôt. Vous pouvez également modifier directement les valeurs `environment:` dans [docker-compose.yml](docker-compose.yml#L1).
 
 **Installation & lancement (build + run)**
 Depuis la racine du projet, exécutez:
@@ -65,6 +92,7 @@ cd web/php && composer install --no-dev --optimize-autoloader
 
 - Mail: `MAIL_HOST`, `MAIL_PORT`, `MAIL_USERNAME`, `MAIL_PASSWORD`, `MAIL_ENCRYPTION`, `MAIL_FROM_EMAIL`, `MAIL_FROM_NAME` (définies dans `docker-compose.yml` ou via `.env` si vous en ajoutez un)
 - Base de données: `MYSQL_ROOT_PASSWORD`, `MYSQL_DATABASE` (définies pour le service `db`)
+- phpMyAdmin: `PMA_USER`, `PMA_PASSWORD`, `PMA_HOST` (définies pour le service `phpma` / dans `docker-compose.yml`)
 
 **Endpoints utiles (synchronisation jeu/wiki)**
 
